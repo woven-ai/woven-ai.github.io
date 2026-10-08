@@ -1,18 +1,22 @@
 ---
 // Hero.astro: title block, key takeaway, resources, authors, teaser, and the four research questions.
-const authors = [
-  { name: 'Zheyu Fan', aff: '1' },
-  { name: 'Yue Zhang', aff: '3' },
-  { name: 'Mingkai Deng', aff: '2' },
-  { name: 'Kangrui Wang', aff: '1', url: 'https://jameskrw.github.io/' },
-  { name: 'Qineng Wang', aff: '1', url: 'https://qinengwang-aiden.github.io/' },
-  { name: 'Canyu Chen', aff: '1' },
-  { name: 'Jie Hao', aff: '4' },
-  { name: 'Xing Fan', aff: '4' },
-  { name: 'Chenlei Guo', aff: '4' },
-  { name: 'Eric P. Xing', aff: '2' },
-  { name: 'Mohit Bansal', aff: '3', url: 'https://www.cs.unc.edu/~mbansal/' },
-  { name: 'Manling Li', aff: '1', url: 'https://limanling.github.io/' },
+const authorLines = [
+  [
+    { name: 'Zheyu Fan', aff: '1', url: 'https://lorduky.github.io/' },
+    { name: 'Yue Zhang', aff: '3', url: 'https://zhangyuejoslin.github.io/' },
+    { name: 'Mingkai Deng', aff: '2', url: 'https://mingkaid.github.io/' },
+    { name: 'Kangrui Wang', aff: '1', url: 'https://jameskrw.github.io/' },
+    { name: 'Qineng Wang', aff: '1', url: 'https://qinengwang-aiden.github.io/' },
+    { name: 'Canyu Chen', aff: '1', url: 'https://canyuchen.com/' },
+  ],
+  [
+    { name: 'Jie Hao', aff: '4', url: 'https://scholar.google.com/citations?user=5MLHAiUAAAAJ' },
+    { name: 'Xing Fan', aff: '4', url: 'https://scholar.google.com/citations?user=W_NygtQAAAAJ' },
+    { name: 'Chenlei Guo', aff: '4', url: 'https://scholar.google.com/citations?user=gRFsEm4AAAAJ' },
+    { name: 'Eric P. Xing', aff: '2', url: 'https://www.cs.cmu.edu/~epxing/' },
+    { name: 'Mohit Bansal', aff: '3', url: 'https://www.cs.unc.edu/~mbansal/' },
+    { name: 'Manling Li', aff: '1', url: 'https://limanling.github.io/' },
+  ],
 ];
 const affiliations = ['Northwestern University', 'Carnegie Mellon University', 'UNC Chapel Hill', 'Amazon'];
 
@@ -58,11 +62,13 @@ const questions = [
   </div>
 
   <div class="authors-section">
-    <p class="authors-line">
-      {authors.map((a, i) => (
-        <span class="author">{a.url ? <a href={a.url} target="_blank" rel="noopener noreferrer">{a.name}</a> : <span>{a.name}</span>}<sup>{a.aff}</sup>{i < authors.length - 1 ? ', ' : ''}</span>
-      ))}
-    </p>
+    {authorLines.map((line, li) => (
+      <p class="authors-line">
+        {line.map((a, i) => (
+          <span class="author"><a href={a.url} target="_blank" rel="noopener noreferrer">{a.name}</a><sup>{a.aff}</sup>{i < line.length - 1 || li < authorLines.length - 1 ? ',' : ''}</span>
+        ))}
+      </p>
+    ))}
     <p class="affiliations-line">
       {affiliations.map((a, i) => (<span class="affiliation"><sup>{i + 1}</sup>{a}</span>))}
     </p>
@@ -97,8 +103,9 @@ const questions = [
   .resource-button.is-soon { opacity: 0.55; cursor: default; }
   .resource-button.is-soon:hover { transform: none; }
   .resource-button small { font-size: 0.7rem; font-weight: 600; margin-left: 0.15rem; color: #667; text-transform: uppercase; letter-spacing: 0.04em; }
-  .authors-section { margin: 1.4rem auto 0; max-width: 900px; }
-  .authors-line { font-size: 1.02rem; line-height: 1.9; color: #222; }
+  .authors-section { margin: 1.4rem auto 0; max-width: 1000px; }
+  .authors-line { font-size: 1.02rem; line-height: 1.9; color: #222; display: flex; flex-wrap: wrap; justify-content: center; column-gap: 0.45em; }
+  .author { white-space: nowrap; }
   .authors-line a { color: var(--accent-color); text-decoration: none; font-weight: 500; }
   .authors-line a:hover { text-decoration: underline; }
   .authors-line sup, .affiliations-line sup { font-size: 0.7em; margin-left: 1px; color: #556; }
