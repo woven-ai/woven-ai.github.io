@@ -1,0 +1,28 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Hero from '../components/Hero.astro';
+import Transition from '../components/Transition.astro';
+import Deficit from '../components/Deficit.astro';
+import Transfer from '../components/Transfer.astro';
+import Primitive from '../components/Primitive.astro';
+import Recipe from '../components/Recipe.astro';
+import Resources from '../components/Resources.astro';
+import AuthorsCitation from '../components/AuthorsCitation.astro';
+
+import '../styles/section.css';
+import '../styles/hero.css';
+import '../styles/authors.css';
+import '../styles/resources.css';
+
+const pageTitle = "WOVEN: Weaving Visual World Modeling into Multimodal LLMs";
+---
+<Layout title={pageTitle}>
+  <Hero />
+  <Transition />
+  <Deficit />
+  <Transfer />
+  <Primitive />
+  <Recipe />
+  <Resources />
+  <AuthorsCitation />
+</Layout>

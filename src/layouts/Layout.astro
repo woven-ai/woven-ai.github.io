@@ -1,0 +1,115 @@
+---
+// src/layouts/Layout.astro
+import '../styles/global.css';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+
+const { title } = Astro.props;
+
+const siteUrl = "https://woven-ai.github.io/";
+const paperTitle = "WOVEN: Weaving Visual World Modeling into Multimodal LLMs";
+const description = "WOVEN tests whether visual transition reasoning can serve as a shared training primitive for multimodal LLMs. Training subsets of about 2,000 items each collectively improve 22 of 26 external benchmarks, by up to 27.3 percentage points, and controlled comparisons yield a training recipe for visual world modeling.";
+const ogImage = `${siteUrl}figures/og-image.jpg`;
+
+const authors = [
+  "Zheyu Fan", "Yue Zhang", "Mingkai Deng", "Kangrui Wang", "Qineng Wang", "Canyu Chen",
+  "Jie Hao", "Xing Fan", "Chenlei Guo", "Eric P. Xing", "Mohit Bansal", "Manling Li",
+];
+
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "ScholarlyArticle",
+      "@id": `${siteUrl}#paper`,
+      "headline": paperTitle,
+      "name": paperTitle,
+      "url": siteUrl,
+      "author": authors.map((name) => ({ "@type": "Person", name })),
+      "abstract": description,
+      "keywords": "visual world modeling, visual transition reasoning, multimodal LLM, MLLM, training primitive, training recipe, video generation, transfer learning",
+    },
+    {
+      "@type": "WebSite",
+      "@id": `${siteUrl}#website`,
+      "url": siteUrl,
+      "name": "WOVEN",
+      "description": description,
+    },
+  ],
+};
+---
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <link rel="icon" type="image/png" href="logo/woven_icon.png" />
+        <meta name="generator" content={Astro.generator} />
+        <title>{title}</title>
+
+        <meta name="description" content={description} />
+        <meta name="robots" content="index, follow, max-image-preview:large" />
+        <link rel="canonical" href={siteUrl} />
+
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content={siteUrl} />
+        <meta property="og:site_name" content="WOVEN" />
+        <meta property="og:title" content={paperTitle} />
+        <meta property="og:description" content={description} />
+        <meta property="og:image" content={ogImage} />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
+
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={paperTitle} />
+        <meta name="twitter:description" content={description} />
+        <meta name="twitter:image" content={ogImage} />
+
+        <meta name="citation_title" content={paperTitle} />
+        {authors.map((a) => <meta name="citation_author" content={a} />)}
+        <meta name="citation_publication_date" content="2026" />
+
+        <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    </head>
+    <body>
+        <Header />
+        <main>
+            <slot />
+        </main>
+        <Footer />
+    </body>
+</html>
+
+<style is:global>
+	:root {
+		--header-height: 60px;
+		--page-max-width: 1100px;
+		--text-light: #555;
+	}
+	* {
+		box-sizing: border-box;
+		margin: 0;
+		padding: 0;
+	}
+	html {
+		font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+		color: #252525;
+		scroll-behavior: smooth;
+		scroll-padding-top: calc(var(--header-height) + 12px);
+	}
+	body {
+		min-height: 100vh;
+		overflow-x: hidden;
+	}
+	main {
+		padding-top: var(--header-height);
+	}
+	@media (prefers-reduced-motion: reduce) {
+		html { scroll-behavior: auto; }
+	}
+</style>

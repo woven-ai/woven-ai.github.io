@@ -1,0 +1,55 @@
+---
+import { DEFICIT_COLS, DEFICIT_ROWS } from '../data/woven';
+const groups = [
+  { label: '', span: 2 },
+  { label: 'Action type', span: 5 },
+  { label: 'Reasoning type', span: 8 },
+  { label: 'Perturbation', span: 2 },
+];
+const colTitles: Record<string, string> = {
+  Exo: 'Passive physical events', Perc: 'Camera motion', Insp: 'Object inspection', Navi: 'Navigation', Mani: 'Object manipulation',
+  Fwd: 'Forward dynamics', Inv: 'Inverse dynamics', Rmv: 'Counterfactual removal', Sub: 'Counterfactual substitution',
+  Otm: 'Outcome prediction', Cue: 'Cued prediction', Ord: 'Temporal ordering', Adj: 'Temporal adjacency',
+  Geo: 'Geometric perturbation', App: 'Appearance perturbation',
+};
+---
+<section id="deficit" class="content-section alt-background">
+  <div class="section-container narrow">
+    <span class="section-tag">Question 1 · Do current MLLMs show a deficit?</span>
+    <h2 class="section-title left">Current MLLMs show a substantial and systematic deficit</h2>
+    <p>
+      To establish the need for training, we evaluate 38 frontier MLLMs on the in-distribution and state-perturbation test sets.
+      The best model, GPT-5.4, reaches 65.8% in-distribution accuracy against 92.3% for humans (the mean of three annotators), and the next three fall between 57.8% and 63.2%.
+      The gap persists across model scales, and it has a consistent structure across model families: for every model, temporal adjacency is harder than temporal ordering,
+      counterfactual removal is harder than counterfactual substitution, and accuracy drops more under geometric than under appearance changes.
+    </p>
+  </div>
+  <div class="section-container">
+    <div class="table-scroll" role="region" aria-label="Accuracy of the four strongest models and humans" tabindex="0">
+      <table class="data-table">
+        <thead>
+          <tr>
+            {groups.map((g) => <th colspan={g.span} class="group">{g.label}</th>)}
+          </tr>
+          <tr>
+            <th class="rowhead">Accuracy (%)</th>
+            {DEFICIT_COLS.map((c) => <th title={colTitles[c] ?? c}>{c}</th>)}
+          </tr>
+        </thead>
+        <tbody>
+          {DEFICIT_ROWS.map((r) => (
+            <tr class={r.model === 'Human' ? 'human' : ''}>
+              <th class="rowhead">{r.model}</th>
+              {r.v.map((x) => <td>{x.toFixed(1)}</td>)}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+    <p class="table-note">
+      In-distribution accuracy overall, by action type (Exo: passive physical events; Perc: camera motion; Insp: object inspection; Navi: navigation; Mani: object manipulation)
+      and by reasoning type (Fwd/Inv: forward/inverse dynamics; Rmv/Sub: counterfactual removal/substitution; Otm/Cue: outcome/cued prediction; Ord/Adj: temporal ordering/adjacency),
+      and state-perturbation accuracy under geometric and appearance changes. Results for all 38 models are in the paper.
+    </p>
+  </div>
+</section>

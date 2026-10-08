@@ -1,0 +1,147 @@
+---
+import { ROBUSTNESS, PROSPECTIVE, ACTION_NAMES } from '../data/woven';
+const recipe = [
+  { n: '1', title: 'Select supervision by reasoning operation', text: 'To improve a downstream task, select supervision that teaches the reasoning operation the task requires, not supervision that matches its actions, scenes, or domains.', href: '#recipe-1' },
+  { n: '2', title: 'Prefer large state changes for robustness', text: 'For robustness, prefer supervision with large state changes, such as object manipulation over camera motion.', href: '#recipe-2' },
+  { n: '3', title: 'Supervise temporal and agent-driven tasks directly', text: 'Transfer does not cross the boundary between the temporal family and the other three, nor the boundary between passive physical events and agent-driven actions.', href: '#recipe-3' },
+  { n: '4', title: 'Transition supervision helps transition tasks', text: 'For downstream tasks that involve no transition, such as static perception, transition supervision does not help.', href: '#recipe-3' },
+];
+const RMAX = 36;
+const fMin = -1.5, fMax = 6.5;
+const fx = (x: number) => ((x - fMin) / (fMax - fMin)) * 100;
+const fmt = (x: number, d = 1) => `${x > 0 ? '+' : x < 0 ? '−' : ''}${Math.abs(x).toFixed(d)}`;
+---
+<section id="recipe" class="content-section">
+  <div class="section-container narrow">
+    <span class="section-tag">Question 4 · What should guide the training recipe?</span>
+    <h2 class="section-title left">A training recipe for visual world modeling</h2>
+    <p>
+      From the transfer profiles, error-typed analyses, and perturbation robustness of the controlled subsets, we distill four recipe items, then test the recipe prospectively on held-out benchmarks.
+    </p>
+  </div>
+  <div class="section-container">
+    <div class="recipe-cards">
+      {recipe.map((r) => (
+        <a class="recipe-card" href={r.href}>
+          <span class="rn">{r.n}</span>
+          <span class="rt">{r.title}</span>
+          <span class="rx">{r.text}</span>
+        </a>
+      ))}
+    </div>
+  </div>
+
+  <div class="section-container narrow" id="recipe-1">
+    <h3 class="sub-title">(1) The reasoning operation decides where supervision transfers</h3>
+    <p>
+      Similarity in scenes, actions, or application domains is an intuitive basis for selecting transferable supervision. To test it, we compare subsets that share only an action type with subsets that share only a reasoning family.
+      All transfer profiles contain the common component from Question 3, so we remove it by standardizing the gains within each benchmark and correlate the residual profiles pairwise.
+      Subsets teaching the same reasoning family have similar residual profiles (mean pairwise correlation <strong>+0.32</strong>), whereas subsets sharing only an action type are no more similar than subsets sharing neither (<strong>−0.22</strong> versus <strong>−0.23</strong>).
+      The same ordering holds under three other normalizations of the gains.
+    </p>
+  </div>
+  <div class="section-container">
+    <figure class="wide-figure">
+      <a href="figures/grouping.png" target="_blank" rel="noopener" class="zoom-link" title="Open full-size image"><img src="figures/grouping.png" alt="Three correlation matrices of the 11 subsets' transfer profiles: raw profiles with all pairs positive; residual profiles ordered by action type with no block structure; residual profiles ordered by reasoning family with diagonal blocks." width="2400" height="673" loading="lazy" /></a>
+      <figcaption><strong>Correlation of transfer profiles under the two candidate groupings.</strong> Pairwise Pearson correlation of the 11 subsets’ 26-benchmark transfer profiles. Left: raw profiles, all pairs positive. Middle and right: the same residual matrix after the per-benchmark z-score, ordered by action type and by reasoning family; only the latter produces diagonal blocks.</figcaption>
+    </figure>
+  </div>
+
+  <div class="section-container narrow" id="recipe-2">
+    <h3 class="sub-title">(2) Larger state changes give more robustness</h3>
+    <p>Among the causal-dynamics subsets, gains on the state-perturbation test set increase with how much the action changes the scene, and passive physical events give the largest gain of all subsets.</p>
+    <div class="robust" role="list">
+      {ROBUSTNESS.map((r) => (
+        <div class="rrow" role="listitem">
+          <span class="rname">{ACTION_NAMES[r.s.split('_')[0]]}</span>
+          <span class="rtrack"><span class="rbar" style={`width:${(r.d / RMAX) * 100}%`}></span><span class="rval" style={`left:calc(${(r.d / RMAX) * 100}% + 6px)`}>+{r.d.toFixed(1)}</span></span>
+        </div>
+      ))}
+    </div>
+    <p class="table-note">Gain on the state-perturbation test set (percentage points over the base model) after training on each subset; the first four are causal-dynamics subsets, the last is the passive-physical-event subset.</p>
+  </div>
+
+  <div class="section-container narrow" id="recipe-3">
+    <h3 class="sub-title">(3, 4) Where transfer breaks</h3>
+    <p>
+      Supervision on one reasoning operation often teaches others, but two kinds of transition reasoning are not learned this way, nor are capabilities beyond state transitions.
+      Temporal localization is learned only from temporal supervision: the four temporal subsets raise temporal-adjacency accuracy from 25.7% to 55.6–58.7%, whereas the seven other subsets leave it near the baseline.
+      Agent-driven transitions are not learned from passive physical events: that subset contains no agent action to learn from, and it lowers accuracy on the two benchmarks built on an agent’s action and its outcome,
+      WorldPrediction (−10.2) and ActionEQA (−1.7). The 4 benchmarks of static perception and general video QA do not improve under any training.
+    </p>
+  </div>
+
+  <div class="section-container narrow" id="prospective">
+    <h3 class="sub-title">The recipe predicts transfer on held-out benchmarks</h3>
+    <p>
+      We use the recipe to select training supervision before any training, and evaluate on external benchmarks that played no part in its derivation (questions from MMSI-Bench, VLM4D, PhysBench, SPAR-Bench, MVBench, IntPhys 2, and CameraBench).
+      For questions about agent actions and their outcomes, a mixture of WOVEN items composed by the recipe is compared with mixtures of the same size composed by matching the action (camera-heavy), by a different reasoning operation (temporal-heavy),
+      by passive physical events (exogenous-heavy), or with no selection (uniform). Each mixture trains Qwen2.5-VL-3B-Instruct with 8 seeds. <strong>All five comparisons come out as the recipe predicts.</strong>
+    </p>
+  </div>
+  <div class="section-container">
+    <figure class="forest" aria-labelledby="forest-cap">
+      <div class="frow fhead" aria-hidden="true">
+        <span class="fc">Comparison mixture</span><span class="fq">Questions</span>
+        <span class="ftrack faxis">
+          {[-1, 0, 2, 4, 6].map((t) => (<span class="ftick" style={`left:${fx(t)}%`}>{t > 0 ? `+${t}` : t < 0 ? `−${-t}` : '0'}</span>))}
+        </span>
+        <span class="fv">Δ [95% CI]</span><span class="fp">p</span>
+      </div>
+      {PROSPECTIVE.map((r) => (
+        <div class="frow">
+          <span class="fc">{r.comp} <small>item {r.item}</small></span>
+          <span class="fq">{r.set}</span>
+          <span class="ftrack">
+            <span class="fzero" style={`left:${fx(0)}%`}></span>
+            <span class="fci" style={`left:${fx(r.lo)}%;width:${fx(r.hi) - fx(r.lo)}%`}></span>
+            <span class="fdot" style={`left:${fx(r.d)}%`}></span>
+          </span>
+          <span class="fv">{fmt(r.d)} [{fmt(r.lo, 2)}, {fmt(r.hi, 2)}]</span>
+          <span class="fp">{r.p}</span>
+        </div>
+      ))}
+      <figcaption id="forest-cap">
+        <strong>Prospective test of the recipe.</strong> Δ = accuracy of the recipe mixture minus the comparison mixture (percentage points, mean over 8 seeds) with 95% confidence intervals.
+        Item (1): selecting by reasoning operation beats the other mixtures on agent-action questions and beats the camera-matched mixture on camera-motion questions.
+        Item (3): on passive-physics questions the exogenous-heavy mixture is ahead instead, as the recipe predicts.
+      </figcaption>
+    </figure>
+  </div>
+</section>
+
+<style>
+  .recipe-cards { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1rem; margin-top: 1.2rem; }
+  .recipe-card { position: relative; display: flex; flex-direction: column; gap: 0.4rem; background: #fff; border: 1px solid var(--card-border); border-radius: 14px; padding: 1rem 1.1rem 1.1rem; text-decoration: none; color: inherit; box-shadow: 0 2px 10px rgba(36, 83, 196, 0.06); transition: transform 0.15s ease, box-shadow 0.15s ease; }
+  .recipe-card:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(36, 83, 196, 0.14); }
+  .rn { width: 30px; height: 30px; border-radius: 50%; background: var(--accent-color); color: #fff; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; font-size: 0.95rem; }
+  .rt { font-weight: 600; color: #1c2a3a; line-height: 1.35; }
+  .rx { font-size: 0.9rem; line-height: 1.5; color: #444; }
+  .robust { display: flex; flex-direction: column; gap: 6px; margin: 1rem 0 0.4rem; }
+  .rrow { display: grid; grid-template-columns: 190px minmax(0, 1fr); align-items: center; gap: 0.7rem; }
+  .rname { text-align: right; font-size: 0.9rem; color: #222; }
+  .rtrack { position: relative; height: 22px; background: #f1f4fa; border-radius: 4px; }
+  .rbar { position: absolute; left: 0; top: 3px; height: 16px; border-radius: 3px; background: var(--accent-color); }
+  .rval { position: absolute; top: 2px; font-size: 0.82rem; font-weight: 600; color: #333; font-variant-numeric: tabular-nums; }
+  .forest { margin: 1.2rem auto 0; max-width: 1000px; background: #fff; border: 1px solid var(--card-border); border-radius: 14px; padding: 1rem 1.2rem; }
+  .frow { display: grid; grid-template-columns: 170px 190px minmax(0, 1fr) 170px 60px; align-items: center; gap: 0.7rem; padding: 0.45rem 0; border-bottom: 1px solid #eef1f6; font-size: 0.88rem; }
+  .frow:last-of-type { border-bottom: 0; }
+  .fhead { font-size: 0.78rem; color: #667; font-weight: 600; border-bottom: 1px solid #d5dbe6; }
+  .fc small { color: #778; font-weight: 500; margin-left: 0.25rem; }
+  .fv, .fp { font-variant-numeric: tabular-nums; color: #333; }
+  .ftrack { position: relative; height: 18px; }
+  .ftrack.faxis { height: 16px; }
+  .ftick { position: absolute; transform: translateX(-50%); font-size: 0.72rem; color: #778; font-weight: 500; }
+  .fzero { position: absolute; top: -4px; bottom: -4px; width: 1px; background: #9aa3b2; }
+  .fci { position: absolute; top: 8px; height: 2px; background: #1c2a3a; }
+  .fdot { position: absolute; top: 3px; width: 12px; height: 12px; margin-left: -6px; border-radius: 50%; background: var(--accent-color); border: 2px solid #fff; box-shadow: 0 0 0 1px var(--accent-color); }
+  .forest figcaption { margin-top: 0.8rem; font-size: 0.9rem; line-height: 1.55; color: #444; }
+  @media (max-width: 900px) { .recipe-cards { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  @media (max-width: 760px) {
+    .recipe-cards { grid-template-columns: 1fr; }
+    .rrow { grid-template-columns: 130px minmax(0, 1fr); }
+    .frow { grid-template-columns: 1fr 1fr; }
+    .frow .ftrack { grid-column: 1 / -1; }
+    .fhead { display: none; }
+  }
+</style>

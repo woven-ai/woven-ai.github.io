@@ -1,0 +1,28 @@
+---
+// Resources.astro: what will be released.
+const items = [
+  { title: 'Dataset', text: '36,076 four-option items with scene, action-type, reasoning-type, and error-type labels; the 11 controlled training subsets load by name.' },
+  { title: 'Code', text: 'Generation, question construction, training (SFT and GRPO), and evaluation on WOVEN and the 26 external benchmarks.' },
+  { title: 'Models', text: 'Checkpoints trained on the full training set and on each controlled subset.' },
+];
+---
+<section id="resources" class="content-section">
+  <div class="section-container narrow">
+    <span class="section-tag">Resources</span>
+    <h2 class="section-title left">Data, code, and models</h2>
+    <div class="res-grid">
+      {items.map((i) => (
+        <div class="res-card"><span class="rt">{i.title}</span><span class="rx">{i.text}</span><span class="soon">Coming soon</span></div>
+      ))}
+    </div>
+  </div>
+</section>
+
+<style>
+  .res-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; margin-top: 1rem; }
+  .res-card { background: #fff; border: 1px solid var(--card-border); border-radius: 14px; padding: 1rem 1.1rem; display: flex; flex-direction: column; gap: 0.45rem; }
+  .res-card .rt { font-weight: 600; color: #1c2a3a; }
+  .res-card .rx { font-size: 0.9rem; line-height: 1.5; color: #444; flex: 1; }
+  .res-card .soon { align-self: flex-start; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; color: var(--accent-color); background: #eef2fb; border-radius: 999px; padding: 0.2rem 0.6rem; }
+  @media (max-width: 760px) { .res-grid { grid-template-columns: 1fr; } }
+</style>

@@ -1,0 +1,113 @@
+---
+import { TRANSFER, FAMILIES, subsetName } from '../data/woven';
+const famColor: Record<string, string> = Object.fromEntries(FAMILIES.map((f) => [f.key, f.color]));
+const MIN = -2, MAX = 31;
+const pos = (x: number) => ((x - MIN) / (MAX - MIN)) * 100;
+const zero = pos(0);
+const firstStatic = TRANSFER.findIndex((r) => r.static);
+const thr = pos(2);
+const learn = [
+  { label: 'In-distribution', from: '26.4%', to: '89.3%' },
+  { label: 'Held-out scenes', from: '27.8%', to: '88.2%' },
+  { label: 'State perturbation', from: '21.1%', to: '38.3%' },
+];
+---
+<section id="transfer" class="content-section">
+  <div class="section-container narrow">
+    <span class="section-tag">Question 2 · Can it be learned, and does it transfer?</span>
+    <h2 class="section-title left">Visual transition reasoning is learnable and transfers broadly</h2>
+    <p>
+      Supervised fine-tuning of Qwen2.5-VL-3B-Instruct on the full WOVEN training set raises WOVEN accuracy as follows; the gains also hold at larger model scales and in a second model family.
+    </p>
+  </div>
+  <div class="section-container narrow">
+    <div class="learn-cards">
+      {learn.map((l) => (
+        <div class="learn-card"><span class="l">{l.label}</span><span class="v"><span class="from">{l.from}</span><span class="arrow" aria-hidden="true">→</span><span class="to">{l.to}</span></span></div>
+      ))}
+    </div>
+    <p>
+      Each controlled subset of the training set (one action type × one reasoning family, about 2,000 items) also raises in-distribution accuracy on its own, by 6.1 to 25.3 percentage points, including on action types it does not train on.
+      The learning is data-efficient: with about 7 hours of generated video, WOVEN post-training yields a larger gain on a spatial-reasoning benchmark than mid-training the same backbone on 125,000 hours of video (Orca).
+    </p>
+    <h3 class="sub-title">Transfer to 22 of 26 external benchmarks</h3>
+    <p>
+      Evaluated zero-shot on 26 external benchmarks, the full training set improves 12 of them, by up to 24.0 percentage points on SAT.
+      The controlled subsets transfer as well: with the best subset chosen for each benchmark, the coverage rises to <strong>22 of 26</strong>, that is, every benchmark that involves visual transitions, with gains of up to <strong>27.3 percentage points</strong>.
+      The 4 benchmarks of static perception and general video QA do not improve under any training, so the gains do not come from an overall stronger model or from better multiple-choice answering.
+    </p>
+  </div>
+
+  <div class="section-container">
+    <figure class="chart" aria-labelledby="transfer-cap">
+      <div class="legend">
+        {FAMILIES.map((f) => (<span class="lg"><i style={`background:${f.color}`}></i>{f.name} subset</span>))}
+        <span class="lg"><i style="background:#b8bfcc"></i>Static perception / general video QA</span>
+      </div>
+      <div class="bars" role="list">
+        <div class="axis-row" aria-hidden="true">
+          <span class="bname"></span>
+          <span class="track axis">
+            {[0, 5, 10, 15, 20, 25].map((t) => (<span class="tick" style={`left:${pos(t)}%`}>{t === 0 ? '0' : `+${t}`}</span>))}
+          </span>
+          <span class="bsub"></span>
+        </div>
+        {TRANSFER.map((r, i) => {
+          const fam = r.s.split('_')[1];
+          const left = r.d >= 0 ? zero : pos(r.d);
+          const width = Math.abs(pos(r.d) - zero);
+          return (
+            <div class={`bar-row${r.static ? ' is-static' : ''}${i === firstStatic ? ' first-static' : ''}`} role="listitem">
+              <span class="bname">{r.b}</span>
+              <span class="track">
+                <span class="zero" style={`left:${zero}%`}></span>
+                <span class="thr" style={`left:${thr}%`}></span>
+                <span class="bar" style={`left:${left}%;width:${width}%;background:${r.static ? '#b8bfcc' : famColor[fam]}`}></span>
+                <span class="val" style={`left:calc(${Math.max(pos(r.d), zero)}% + 6px)`}>{r.d > 0 ? '+' : r.d < 0 ? '−' : ''}{Math.abs(r.d).toFixed(1)}</span>
+              </span>
+              <span class="bsub">{subsetName(r.s)}</span>
+            </div>
+          );
+        })}
+      </div>
+      <figcaption id="transfer-cap">
+        <strong>Gain over the base model on each external benchmark</strong> (percentage points; Qwen2.5-VL-3B-Instruct), using the best-performing controlled subset for that benchmark, named on the right; the gain is the larger of the SFT and GRPO gains.
+        Bars are colored by the reasoning family of that subset; gray bars are the four benchmarks of static perception and general video QA. The dashed line marks the +2-point threshold for counting a benchmark as improved.
+      </figcaption>
+    </figure>
+  </div>
+</section>
+
+<style>
+  .learn-cards { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.9rem; margin: 1.1rem 0 1.3rem; }
+  .learn-card { background: #fff; border: 1px solid var(--card-border); border-radius: 12px; padding: 0.85rem 1rem; display: flex; flex-direction: column; gap: 0.3rem; }
+  .learn-card .l { font-size: 0.85rem; color: #556; }
+  .learn-card .v { display: flex; align-items: baseline; gap: 0.45rem; font-variant-numeric: tabular-nums; }
+  .learn-card .from { font-size: 1.05rem; color: #778; }
+  .learn-card .arrow { color: #99a; }
+  .learn-card .to { font-size: 1.6rem; font-weight: 700; color: var(--accent-color); }
+  .chart { margin: 1.4rem auto 0; max-width: 1000px; background: #fff; border: 1px solid var(--card-border); border-radius: 14px; padding: 1.1rem 1.2rem 1rem; }
+  .legend { display: flex; flex-wrap: wrap; gap: 0.4rem 1.1rem; font-size: 0.85rem; color: #445; margin-bottom: 0.8rem; }
+  .lg { display: inline-flex; align-items: center; gap: 0.4rem; }
+  .lg i { width: 12px; height: 12px; border-radius: 3px; display: inline-block; }
+  .bars { display: flex; flex-direction: column; gap: 4px; }
+  .bar-row, .axis-row { display: grid; grid-template-columns: 150px minmax(0, 1fr) 270px; align-items: center; gap: 0.6rem; }
+  .bname { font-size: 0.88rem; color: #222; text-align: right; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .bsub { font-size: 0.8rem; color: #667; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .track { position: relative; height: 20px; }
+  .track.axis { height: 16px; border-bottom: 1px solid #d5dbe6; }
+  .tick { position: absolute; transform: translateX(-50%); font-size: 0.72rem; color: #778; top: 0; }
+  .zero { position: absolute; top: -2px; bottom: -2px; width: 1px; background: #9aa3b2; }
+  .thr { position: absolute; top: -2px; bottom: -2px; width: 0; border-left: 1px dashed #c0392b; opacity: 0.6; }
+  .bar { position: absolute; top: 3px; height: 14px; border-radius: 3px; }
+  .val { position: absolute; top: 1px; font-size: 0.78rem; font-weight: 600; color: #333; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .bar-row.is-static .bname, .bar-row.is-static .bsub { color: #889; }
+  .bar-row.first-static { margin-top: 10px; padding-top: 10px; border-top: 1px dashed #d5dbe6; }
+  .chart figcaption { margin-top: 0.9rem; font-size: 0.9rem; line-height: 1.55; color: #444; }
+  @media (max-width: 760px) {
+    .learn-cards { grid-template-columns: 1fr; }
+    .bar-row, .axis-row { grid-template-columns: 112px minmax(0, 1fr); }
+    .bsub { display: none; }
+    .bname { font-size: 0.8rem; }
+  }
+</style>

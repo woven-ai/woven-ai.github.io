@@ -1,0 +1,22 @@
+---
+// src/components/Footer.astro
+---
+<footer class="simple-footer">
+    <p>Copyright © 2026 - All rights reserved by <a href="https://www.mll.lab.northwestern.edu/" target="_blank" rel="noopener noreferrer">MLL Lab</a></p>
+    <p>Website maintained by <a href="https://www.mll.lab.northwestern.edu/" target="_blank" rel="noopener noreferrer">MLL Lab</a></p>
+</footer>
+
+<style>
+  .simple-footer {
+    background: linear-gradient(135deg, #f3f6fd 0%, #e3eafa 50%, #cdd9f5 100%);
+    padding: 1.5rem 1rem;
+    margin-top: 3rem;
+    text-align: center;
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+    border-top: 1px solid rgba(36, 83, 196, 0.2);
+  }
+  .simple-footer p { margin: 0.25rem 0; }
+  .simple-footer a { color: var(--accent-color); text-decoration: none; font-weight: 500; }
+  .simple-footer a:hover { color: var(--accent-hover); text-decoration: underline; }
+</style>

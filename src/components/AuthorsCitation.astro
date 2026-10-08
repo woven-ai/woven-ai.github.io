@@ -1,0 +1,168 @@
+---
+// AuthorsCitation.astro - Displays citation information
+---
+<section id="citation" class="content-section alt-background">
+  <div class="section-container">
+    <h2 class="section-title">Citation</h2>
+
+    {/* Citation Block */}
+    <div class="citation-section">
+      <p>If you find WOVEN useful in your research, please consider citing:</p>
+      <div class="citation-block">
+        <div class="code-container">
+          <button id="copy-button" aria-label="Copy citation" class="copy-button-corner">
+            <svg class="copy-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
+              <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
+            </svg>
+            <svg class="check-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+          </button>
+          <pre><code>{`@article{fan2026woven,
+  title={WOVEN: Weaving Visual World Modeling into Multimodal LLMs},
+  author={Fan, Zheyu and Zhang, Yue and Deng, Mingkai and Wang, Kangrui and Wang, Qineng and Chen, Canyu and Hao, Jie and Fan, Xing and Guo, Chenlei and Xing, Eric P. and Bansal, Mohit and Li, Manling},
+  year={2026},
+  url={https://woven-ai.github.io/}
+}`}</code></pre>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    // Citation copy functionality
+    const copyButton = document.getElementById('copy-button');
+    const codeElement = document.querySelector('.citation-block pre code');
+    
+    if (copyButton && codeElement) {
+      copyButton.addEventListener('click', async () => {
+        const citationText = codeElement.textContent || '';
+        
+        try {
+          await navigator.clipboard.writeText(citationText);
+          
+          // Visual feedback
+          copyButton.classList.add('copied');
+          
+          // Reset after 2 seconds
+          setTimeout(() => {
+            copyButton.classList.remove('copied');
+          }, 2000);
+        } catch (err) {
+          console.error('Failed to copy: ', err);
+          copyButton.classList.add('copy-error');
+          
+          setTimeout(() => {
+            copyButton.classList.remove('copy-error');
+          }, 2000);
+        }
+      });
+    }
+  });
+</script>
+
+<style>
+  .citation-section p {
+    color: var(--text-secondary);
+    font-size: 1.1rem;
+    margin-bottom: 1.5rem;
+    text-align: center;
+  }
+
+  .citation-section .conference-note {
+    font-weight: 600;
+    color: #111111;
+    margin-top: -0.75rem;
+    margin-bottom: 1.75rem;
+  }
+
+  .citation-block {
+    background: linear-gradient(135deg, #f3f6fd 0%, #e3eafa 50%, #cdd9f5 100%);
+    border: 1px solid rgba(36, 83, 196, 0.2);
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(36, 83, 196, 0.1);
+    backdrop-filter: blur(10px);
+  }
+
+  .code-container {
+    position: relative;
+  }
+
+  .citation-block pre {
+    margin: 0;
+    padding: 1.5rem;
+    background-color: rgba(255, 255, 255, 0.8);
+    color: var(--text-primary);
+    font-family: 'Menlo', 'Monaco', 'Courier New', monospace;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    overflow-x: auto;
+    white-space: pre-wrap;
+    border-radius: 0 0 8px 8px;
+  }
+
+  .citation-block code {
+    color: var(--text-primary);
+  }
+
+  .copy-button-corner {
+    position: absolute;
+    top: 0.75rem;
+    right: 0.75rem;
+    background-color: rgba(255, 255, 255, 0.95);
+    border: 1px solid rgba(36, 83, 196, 0.3);
+    border-radius: 6px;
+    padding: 0.5rem;
+    cursor: pointer;
+    color: var(--text-secondary);
+    transition: all 0.2s ease;
+    backdrop-filter: blur(10px);
+  }
+
+  .copy-button-corner:hover {
+    background-color: rgba(36, 83, 196, 0.15);
+    color: var(--accent-color);
+    border-color: var(--accent-color);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(36, 83, 196, 0.2);
+  }
+
+  .copy-button-corner.copied {
+    background-color: rgba(16, 185, 129, 0.2);
+    color: #2f6fd6;
+    border-color: #2f6fd6;
+  }
+
+  .copy-button-corner.copy-error {
+    background-color: rgba(239, 68, 68, 0.2);
+    color: #ef4444;
+    border-color: #ef4444;
+  }
+
+  .copy-button-corner .copy-icon,
+  .copy-button-corner .check-icon {
+    display: block;
+    width: 20px;
+    height: 20px;
+  }
+
+  .copy-button-corner .copy-icon {
+    display: block;
+  }
+
+  .copy-button-corner .check-icon {
+    display: none;
+  }
+
+  .copy-button-corner.copied .copy-icon {
+    display: none;
+  }
+
+  .copy-button-corner.copied .check-icon {
+    display: block;
+  }
+</style> 
