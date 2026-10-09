@@ -2,5 +2,5 @@
 // the URLs in the paper (https://woven-ai.github.io/code and /data) never change.
 export const LINK_TARGETS = {
   code: 'https://woven-ai.github.io/#resources',
-  data: 'https://woven-ai.github.io/#resources',
+  data: 'https://huggingface.co/datasets/MLL-Lab/WOVEN',
 };

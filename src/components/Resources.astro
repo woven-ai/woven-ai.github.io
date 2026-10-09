@@ -1,7 +1,7 @@
 ---
 // Resources.astro: what will be released.
 const items = [
-  { title: 'Dataset', text: '36,076 four-option items with scene, action-type, reasoning-type, and error-type labels; the 11 controlled training subsets load by name.' },
+  { title: 'Dataset', text: '36,076 four-option items with scene, action-type, reasoning-type, and error-type labels. The training split is available now; the validation split and the test sets follow soon.', href: 'https://huggingface.co/datasets/MLL-Lab/WOVEN' },
   { title: 'Code', text: 'Generation, question construction, training (SFT and GRPO), and evaluation on WOVEN and the 26 external benchmarks.' },
   { title: 'Models', text: 'Checkpoints trained on the full training set and on each controlled subset.' },
 ];
@@ -12,7 +12,9 @@ const items = [
     <h2 class="section-title left">Data, code, and models</h2>
     <div class="res-grid">
       {items.map((i) => (
-        <div class="res-card"><span class="rt">{i.title}</span><span class="rx">{i.text}</span><span class="soon">Coming soon</span></div>
+        (i.href
+          ? <a class="res-card is-link" href={i.href} target="_blank" rel="noopener"><span class="rt">{i.title}</span><span class="rx">{i.text}</span><span class="soon avail">On Hugging Face →</span></a>
+          : <div class="res-card"><span class="rt">{i.title}</span><span class="rx">{i.text}</span><span class="soon">Coming soon</span></div>)
       ))}
     </div>
   </div>
@@ -24,5 +26,8 @@ const items = [
   .res-card .rt { font-weight: 600; color: #1c2a3a; }
   .res-card .rx { font-size: 0.9rem; line-height: 1.5; color: #444; flex: 1; }
   .res-card .soon { align-self: flex-start; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; color: var(--accent-color); background: #eef2fb; border-radius: 999px; padding: 0.2rem 0.6rem; }
+  .res-card.is-link { text-decoration: none; color: inherit; transition: transform 0.15s ease, box-shadow 0.15s ease; }
+  .res-card.is-link:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(36, 83, 196, 0.14); }
+  .res-card .soon.avail { color: #fff; background: var(--accent-color); }
   @media (max-width: 760px) { .res-grid { grid-template-columns: 1fr; } }
 </style>
