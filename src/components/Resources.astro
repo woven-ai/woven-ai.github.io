@@ -2,7 +2,7 @@
 // Resources.astro: what will be released.
 const items = [
   { title: 'Dataset', text: '36,076 four-option items with scene, action-type, reasoning-type, and error-type labels. The training split is available now; the validation split and the test sets follow soon.', href: 'https://huggingface.co/datasets/MLL-Lab/WOVEN' },
-  { title: 'Code', text: 'Generation, question construction, training (SFT and GRPO), and evaluation on WOVEN and the 26 external benchmarks.' },
+  { title: 'Code', text: 'Training on WOVEN with SFT and GRPO is available now; evaluation on WOVEN and the 26 external benchmarks follows soon.', href: 'https://github.com/mll-lab-nu/WOVEN', cta: 'On GitHub →' },
   { title: 'Models', text: 'Checkpoints trained on the full training set and on each controlled subset.' },
 ];
 ---
@@ -13,7 +13,7 @@ const items = [
     <div class="res-grid">
       {items.map((i) => (
         (i.href
-          ? <a class="res-card is-link" href={i.href} target="_blank" rel="noopener"><span class="rt">{i.title}</span><span class="rx">{i.text}</span><span class="soon avail">On Hugging Face →</span></a>
+          ? <a class="res-card is-link" href={i.href} target="_blank" rel="noopener"><span class="rt">{i.title}</span><span class="rx">{i.text}</span><span class="soon avail">{i.cta ?? 'On Hugging Face →'}</span></a>
           : <div class="res-card"><span class="rt">{i.title}</span><span class="rx">{i.text}</span><span class="soon">Coming soon</span></div>)
       ))}
     </div>
