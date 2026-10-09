@@ -35,6 +35,19 @@ const questions = [
 
   <p class="research-question">Can visual transition reasoning serve as a shared training primitive for multimodal LLMs?</p>
 
+  <div class="authors-section">
+    {authorLines.map((line, li) => (
+      <p class="authors-line">
+        {line.map((a, i) => (
+          <span class="author"><a href={a.url} target="_blank" rel="noopener noreferrer">{a.name}</a><sup>{a.aff}</sup>{i < line.length - 1 || li < authorLines.length - 1 ? ',' : ''}</span>
+        ))}
+      </p>
+    ))}
+    <p class="affiliations-line">
+      {affiliations.map((a, i) => (<span class="affiliation"><sup>{i + 1}</sup>{a}</span>))}
+    </p>
+  </div>
+
   <div class="takeaway">
     <span class="takeaway-label">Key Takeaway</span>
     <p>Training subsets of only about 2,000 WOVEN items each collectively improve <strong>22 of 26</strong> external benchmarks, by up to <strong>27.3 percentage points</strong>. The gains come from one shared capability, and controlled comparisons yield a <strong>training recipe</strong> for visual world modeling, validated prospectively on held-out benchmarks.</p>
@@ -59,19 +72,6 @@ const questions = [
         <span>BibTeX</span>
       </a>
     </div>
-  </div>
-
-  <div class="authors-section">
-    {authorLines.map((line, li) => (
-      <p class="authors-line">
-        {line.map((a, i) => (
-          <span class="author"><a href={a.url} target="_blank" rel="noopener noreferrer">{a.name}</a><sup>{a.aff}</sup>{i < line.length - 1 || li < authorLines.length - 1 ? ',' : ''}</span>
-        ))}
-      </p>
-    ))}
-    <p class="affiliations-line">
-      {affiliations.map((a, i) => (<span class="affiliation"><sup>{i + 1}</sup>{a}</span>))}
-    </p>
   </div>
 
   <figure class="teaser">
