@@ -1,5 +1,5 @@
 ---
-// Primitive.astro: RQ3 — do the gains come from one shared capability?
+// Primitive.astro: RQ3 — a primitive, or a collection of task-specific effects?
 import { WOVEN_TRAIN, WOVEN_TRAIN_COLS, TRAINED_COL, ACTION_NAMES, subsetName } from '../data/woven';
 const colNames = WOVEN_TRAIN_COLS.map((c) => ({ Exo: ACTION_NAMES.exo, Perc: ACTION_NAMES.perc, Insp: ACTION_NAMES.insp, Navi: ACTION_NAMES.navi, Mani: ACTION_NAMES.mani } as Record<string, string>)[c]);
 const MAXV = 65;
@@ -9,15 +9,63 @@ const cellBg = (x: number) => {
 };
 const cellFg = (x: number) => (x >= 0 && x / MAXV > 0.45 ? '#fff' : '#1c2a3a');
 const fmt = (x: number) => `${x > 0 ? '+' : x < 0 ? '−' : ''}${Math.abs(x).toFixed(1)}`;
+
+// Schematic: two explanations of the gains (left: task-specific effects; right: a shared primitive).
+const SRC = ['Camera motion', 'Manipulation', 'Passive physics'];
+const DST = ['Spatial', 'Embodied', 'Physical'];
+const BW = 132, BH = 40, YS = [52, 116, 180];
+const PW = 112, PH = 92, PX = 164, PY = 102;
 ---
 
-<details class="rq" id="primitive">
+<details class="rq" id="primitive" open>
   <summary>
     <span class="rq-tag">RQ3</span>
-    <span class="rq-q">Do the gains come from one shared capability?</span>
-    <span class="rq-a">Yes — subsets also improve action types they do not train on (43 of 44 cases), and larger WOVEN gains bring larger downstream gains (r = 0.86 across the 11 subsets).</span>
+    <span class="rq-q">A primitive, or just a collection of task-specific effects?</span>
+    <span class="rq-a">A primitive — different sources of supervision build the same capability, and broad downstream gains result from it (r = 0.86 across the 11 subsets).</span>
   </summary>
   <div class="rq-body">
+    <div class="schema">
+      <figure class="schema-panel">
+        <svg viewBox="0 0 440 236" role="img" aria-label="Task-specific effects: each supervision source improves only its own domain">
+          <defs><marker id="ah-gray" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#a3acbb" /></marker></defs>
+          <text x="86" y="26" class="col-h" text-anchor="middle">Supervision sources</text>
+          <text x="354" y="26" class="col-h" text-anchor="middle">Downstream domains</text>
+          {YS.map((y, k) => (
+            <g>
+              <rect x="20" y={y} width={BW} height={BH} rx="9" class="box src" />
+              <text x={20 + BW / 2} y={y + BH / 2 + 5} class="box-t">{SRC[k]}</text>
+              <rect x={440 - 20 - BW} y={y} width={BW} height={BH} rx="9" class="box dst" />
+              <text x={440 - 20 - BW / 2} y={y + BH / 2 + 5} class="box-t">{DST[k]}</text>
+              <line x1={20 + BW + 8} y1={y + BH / 2} x2={440 - 20 - BW - 10} y2={y + BH / 2} class="arrow gray" marker-end="url(#ah-gray)" />
+            </g>
+          ))}
+        </svg>
+        <figcaption class="verdict no"><span class="mark">✕</span>A collection of task-specific effects</figcaption>
+      </figure>
+      <figure class="schema-panel">
+        <svg viewBox="0 0 440 236" role="img" aria-label="A shared primitive: every supervision source builds visual transition reasoning, which helps every domain">
+          <defs><marker id="ah-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#2453c4" /></marker></defs>
+          <text x="6" y="26" class="col-h" text-anchor="start">Supervision sources</text>
+          <text x="434" y="26" class="col-h" text-anchor="end">Downstream domains</text>
+          {YS.map((y, k) => (
+            <g>
+              <rect x="6" y={y} width={120} height={BH} rx="9" class="box src" />
+              <text x={66} y={y + BH / 2 + 5} class="box-t">{SRC[k]}</text>
+              <rect x={314} y={y} width={120} height={BH} rx="9" class="box dst" />
+              <text x={374} y={y + BH / 2 + 5} class="box-t">{DST[k]}</text>
+              <line x1={130} y1={y + BH / 2} x2={PX - 6} y2={PY + PH / 2 + (k - 1) * 22} class="arrow blue" marker-end="url(#ah-blue)" />
+              <line x1={PX + PW + 4} y1={PY + PH / 2 + (k - 1) * 22} x2={308} y2={y + BH / 2} class="arrow blue" marker-end="url(#ah-blue)" />
+            </g>
+          ))}
+          <rect x={PX} y={PY} width={PW} height={PH} rx="14" class="prim" />
+          <text x={PX + PW / 2} y={PY + 32} class="prim-t">Visual</text>
+          <text x={PX + PW / 2} y={PY + 51} class="prim-t">transition</text>
+          <text x={PX + PW / 2} y={PY + 70} class="prim-t">reasoning</text>
+        </svg>
+        <figcaption class="verdict yes"><span class="mark">✓</span>A shared primitive</figcaption>
+      </figure>
+    </div>
+    <p class="rq-note">Two explanations of the downstream gains; the evidence below supports the one on the right.</p>
     <div class="table-scroll" role="region" aria-label="WOVEN gains by training subset and action type" tabindex="0">
       <table class="heat">
         <thead>
@@ -40,7 +88,7 @@ const fmt = (x: number) => `${x > 0 ? '+' : x < 0 ? '−' : ''}${Math.abs(x).toF
         </tbody>
       </table>
     </div>
-    <p class="rq-note">Gain in WOVEN accuracy (points over the base model) after training on each subset; outlined cells mark the action type the subset trains on.</p>
+    <p class="rq-note">Each subset also improves the action types it does not train on: gain in WOVEN accuracy (points over the base model); outlined cells mark the action type the subset trains on.</p>
       <figure class="wide-figure">
         <a href="figures/substitution.png" target="_blank" rel="noopener" class="zoom-link" title="Open full-size image"><img src="figures/substitution.png" alt="Three panels (SAT, ActionEQA, CLEVRER) plotting accuracy against the share p of task-specific training data replaced by WOVEN items under a fixed 2,000-item budget. Accuracy stays near the p = 0 level up to 30 to 50 percent replacement and stays above the deletion control." width="2000" height="573" loading="lazy" /></a>
         <figcaption>With the training budget fixed at 2,000 items, replacing 30–50% of a benchmark’s own training data with a WOVEN subset keeps accuracy comparable (blue: 3 seeds and their mean; orange dashed: deleting those items instead).</figcaption>
@@ -49,6 +97,25 @@ const fmt = (x: number) => `${x > 0 ? '+' : x < 0 ? '−' : ''}${Math.abs(x).toF
 </details>
 
 <style>
+  .schema { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.2rem; }
+  .schema-panel { margin: 0; background: #f7f9fd; border: 1px solid #e3e8f1; border-radius: 12px; padding: 0.6rem 0.6rem 0.8rem; }
+  .schema-panel svg { width: 100%; height: auto; display: block; }
+  .col-h { font-size: 11px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; fill: #7d8798; }
+  .box { stroke-width: 1; }
+  .box.src { fill: #e6edfc; stroke: #c9d6f6; }
+  .box.dst { fill: #fff; stroke: #d5dbe6; }
+  .box-t { font-size: 14px; font-weight: 600; fill: #1c2a5a; text-anchor: middle; }
+  .arrow { stroke-width: 2; fill: none; }
+  .arrow.gray { stroke: #a3acbb; }
+  .arrow.blue { stroke: #2453c4; }
+  .prim { fill: #2453c4; }
+  .prim-t { font-size: 15px; font-weight: 700; fill: #fff; text-anchor: middle; }
+  .verdict { text-align: center; font-size: 0.98rem; font-weight: 700; margin-top: 0.3rem; }
+  .verdict .mark { display: inline-block; margin-right: 0.4rem; }
+  .verdict.no { color: #b42318; }
+  .verdict.yes { color: #1f7a4d; }
+  @media (max-width: 760px) { .schema { grid-template-columns: 1fr; } }
+
   .heat { border-collapse: separate; border-spacing: 3px; margin: 1.2rem auto 0; font-variant-numeric: tabular-nums; }
   .heat th { font-size: 0.82rem; font-weight: 600; color: #334; padding: 0.35rem 0.5rem; text-align: center; vertical-align: bottom; }
   .heat th.rowhead { text-align: right; white-space: nowrap; font-weight: 500; color: #222; }

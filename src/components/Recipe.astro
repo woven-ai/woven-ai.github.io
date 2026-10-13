@@ -1,107 +1,157 @@
 ---
-// Recipe.astro: RQ4 — what should guide the training recipe?
-import { ROBUSTNESS, PROSPECTIVE, ACTION_NAMES } from '../data/woven';
-const recipe = [
-  { n: '1', title: 'Select supervision by reasoning operation', text: 'To improve a downstream task, select supervision that teaches the reasoning operation the task requires, not supervision that matches its actions, scenes, or domains.' },
-  { n: '2', title: 'Prefer large state changes for robustness', text: 'For robustness, prefer supervision with large state changes, such as object manipulation over camera motion.' },
-  { n: '3', title: 'Supervise temporal and agent-driven tasks directly', text: 'Transfer does not cross the boundary between the temporal family and the other three, nor the boundary between passive physical events and agent-driven actions.' },
-  { n: '4', title: 'Transition supervision helps transition tasks', text: 'For downstream tasks that involve no transition, such as static perception, transition supervision does not help.' },
-];
-const RMAX = 36;
-const fMin = -1.5, fMax = 6.5;
-const fx = (x: number) => ((x - fMin) / (fMax - fMin)) * 100;
+// Recipe.astro: RQ4 — so what? How should we train it: a training recipe.
+import { ROBUSTNESS, ACTION_NAMES, TRANSFER } from '../data/woven';
 const fmt = (x: number, d = 1) => `${x > 0 ? '+' : x < 0 ? '−' : ''}${Math.abs(x).toFixed(d)}`;
+
+// Shared chart frame (SVG units).
+const CW = 520, CH = 250, PL = 46, PR = 12, PT = 18, PB = 58;
+const plotW = CW - PL - PR, plotH = CH - PT - PB;
+const yScale = (lo: number, hi: number) => (v: number) => PT + plotH * (1 - (v - lo) / (hi - lo));
+
+// Rule 2: robustness gain by the extent of the state change (causal subsets, then passive physical events).
+const y2 = yScale(0, 32);
+const bw2 = plotW / ROBUSTNESS.length;
+const bars2 = ROBUSTNESS.map((r, i) => {
+  const words = ACTION_NAMES[r.s.split('_')[0]].split(' ');
+  const mid = Math.ceil(words.length / 2);
+  return { x: PL + i * bw2 + bw2 * 0.2, w: bw2 * 0.6, y: y2(r.d), h: y2(0) - y2(r.d), d: r.d, l1: words.slice(0, mid).join(' '), l2: words.slice(mid).join(' ') };
+});
+
+// Rule 4: gains on benchmarks with visual transitions vs static perception / general video QA.
+const y4 = yScale(-3, 30);
+const trans = TRANSFER.filter((r) => !r.static), stat = TRANSFER.filter((r) => r.static);
+const colX = [PL + plotW * 0.3, PL + plotW * 0.75];
+const jitter = (i: number, n: number) => ((i % 5) - 2) * 14 + (Math.floor(i / 5) % 2) * 7;
+const dots4 = [
+  ...trans.map((r, i) => ({ cx: colX[0] + jitter(i, trans.length), cy: y4(r.d), b: r.b, d: r.d, st: false })),
+  ...stat.map((r, i) => ({ cx: colX[1] + (i - 1.5) * 16, cy: y4(r.d), b: r.b, d: r.d, st: true })),
+];
 ---
 
 <details class="rq" id="recipe">
   <summary>
     <span class="rq-tag">RQ4</span>
-    <span class="rq-q">What should guide the training recipe?</span>
+    <span class="rq-q">So what? How should we train it — a training recipe</span>
     <span class="rq-a">Select supervision by the reasoning operation it teaches, and prefer large state changes; all five prospective tests come out as predicted.</span>
   </summary>
   <div class="rq-body">
-    <ol class="recipe-list">
-      {recipe.map((r) => (
-        <li>
-          <span class="rn">{r.n}</span>
-          <span class="rt">{r.title}</span>
-          <span class="rx">{r.text}</span>
-        </li>
-      ))}
-    </ol>
-    <figure class="forest" aria-labelledby="forest-cap">
-      <div class="frow fhead" aria-hidden="true">
-        <span class="fc">Comparison mixture</span><span class="fq">Questions</span>
-        <span class="ftrack faxis">
-          {[-1, 0, 2, 4, 6].map((t) => (<span class="ftick" style={`left:${fx(t)}%`}>{t > 0 ? `+${t}` : t < 0 ? `−${-t}` : '0'}</span>))}
-        </span>
-        <span class="fv">Δ [95% CI]</span><span class="fp">p</span>
-      </div>
-      {PROSPECTIVE.map((r) => (
-        <div class="frow">
-          <span class="fc">{r.comp} <small>rule {r.item}</small></span>
-          <span class="fq">{r.set}</span>
-          <span class="ftrack">
-            <span class="fzero" style={`left:${fx(0)}%`}></span>
-            <span class="fci" style={`left:${fx(r.lo)}%;width:${fx(r.hi) - fx(r.lo)}%`}></span>
-            <span class="fdot" style={`left:${fx(r.d)}%`}></span>
-          </span>
-          <span class="fv">{fmt(r.d)} [{fmt(r.lo, 2)}, {fmt(r.hi, 2)}]</span>
-          <span class="fp">{r.p}</span>
-        </div>
-      ))}
-      <figcaption id="forest-cap">Accuracy of the mixture selected by the recipe minus each comparison mixture (points, mean over 8 seeds, 95% CI) on held-out benchmark questions.</figcaption>
-    </figure>
-    <details class="more">
-      <summary>Evidence for rules 1 and 2</summary>
-      <figure class="wide-figure">
+    <div class="rule">
+      <div class="rule-text"><span class="rhead"><span class="rn">1</span><span class="rflag">How to prospectively choose the right data</span></span><span class="rt">Select supervision by reasoning operation</span><span class="rx">To improve a downstream task, select supervision that teaches the reasoning operation the task requires, not supervision that matches its actions, scenes, or domains.</span></div>
+      <figure class="rule-fig">
         <a href="figures/grouping.png" target="_blank" rel="noopener" class="zoom-link" title="Open full-size image"><img src="figures/grouping.png" alt="Three correlation matrices of the 11 subsets' transfer profiles: raw profiles with all pairs positive; residual profiles ordered by action type with no block structure; residual profiles ordered by reasoning family with diagonal blocks." width="2400" height="673" loading="lazy" /></a>
-        <figcaption>Correlation of the 11 subsets’ transfer profiles: raw (left), and residual ordered by action type (middle) or by reasoning family (right).</figcaption>
+        <figcaption>Correlation of the 11 subsets’ transfer profiles: after removing the shared component, blocks appear only when subsets are grouped by reasoning family (right), not by action type (middle).</figcaption>
       </figure>
-      <p class="rq-note">Rule 2: gain on the state-perturbation test (points) after training on each subset.</p>
-      <div class="robust" role="list">
-        {ROBUSTNESS.map((r) => (
-          <div class="rrow" role="listitem">
-            <span class="rname">{ACTION_NAMES[r.s.split('_')[0]]}</span>
-            <span class="rtrack"><span class="rbar" style={`width:${(r.d / RMAX) * 100}%`}></span><span class="rval" style={`left:calc(${(r.d / RMAX) * 100}% + 6px)`}>+{r.d.toFixed(1)}</span></span>
-          </div>
-        ))}
-      </div>
-    </details>
+    </div>
+
+    <div class="rule">
+      <div class="rule-text"><span class="rhead"><span class="rn">2</span><span class="rflag">How to get larger robustness</span></span><span class="rt">Prefer large state changes for robustness</span><span class="rx">For robustness, prefer supervision with large state changes, such as object manipulation over camera motion.</span></div>
+      <figure class="rule-fig">
+        <svg viewBox={`0 0 ${CW} ${CH}`} class="chart-svg" role="img" aria-label="Gain on the state-perturbation test rises with the extent of the state change">
+          {[0, 10, 20, 30].map((t) => (<g><line x1={PL} x2={CW - PR} y1={y2(t)} y2={y2(t)} class="grid" /><text x={PL - 8} y={y2(t) + 4} class="tick">{t}</text></g>))}
+          {bars2.map((b) => (<g>
+            <rect x={b.x} y={b.y} width={b.w} height={b.h} rx="3" class="bar2" />
+            <text x={b.x + b.w / 2} y={b.y - 6} class="val">+{b.d.toFixed(1)}</text>
+            <text x={b.x + b.w / 2} y={PT + plotH + 16} class="xl">{b.l1}</text>
+            <text x={b.x + b.w / 2} y={PT + plotH + 30} class="xl">{b.l2}</text>
+          </g>))}
+          <line x1={PL} x2={CW - PR - 6} y1={CH - 10} y2={CH - 10} class="axis-arrow" marker-end="url(#ax-ah)" />
+          <defs><marker id="ax-ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#7d8798" /></marker></defs>
+          <text x={PL + plotW / 2} y={CH - 14} class="axl">Extent of the state change</text>
+        </svg>
+        <figcaption>Gain on the state-perturbation test (points over the base model) after training on each subset: four causal-dynamics subsets, then passive physical events.</figcaption>
+      </figure>
+    </div>
+
+    <div class="rule">
+      <div class="rule-text"><span class="rhead"><span class="rn">3</span><span class="rflag">How to cover what transfer cannot reach</span></span><span class="rt">Supervise temporal and agent-driven tasks directly</span><span class="rx">Transfer does not cross the boundary between the temporal family and the other three, nor the boundary between passive physical events and agent-driven actions.</span></div>
+      <figure class="rule-fig">
+        <svg viewBox="0 0 520 250" class="chart-svg" role="img" aria-label="Transfer does not cross two boundaries: temporal versus other reasoning families, and endogenous (agent-driven) versus exogenous (passive) actions">
+          <text x="12" y="26" class="b-row">Reasoning families</text>
+          <rect x="12" y="36" width="190" height="62" rx="12" class="bx tmp" />
+          <text x="107" y="63" class="bx-t tmp">Temporal</text>
+          <text x="107" y="83" class="bx-s">temporal coherence</text>
+          <rect x="318" y="36" width="190" height="62" rx="12" class="bx oth" />
+          <text x="413" y="63" class="bx-t">Others</text>
+          <text x="413" y="83" class="bx-s">causal · counterfactual · physical</text>
+          <line x1="210" y1="67" x2="310" y2="67" class="b-arrow" marker-start="url(#b-ah)" marker-end="url(#b-ah)" />
+          <circle cx="260" cy="67" r="13" class="b-x" /><path d="M254,61 L266,73 M266,61 L254,73" class="b-xm" />
+
+          <text x="12" y="146" class="b-row">Action types</text>
+          <rect x="12" y="156" width="190" height="62" rx="12" class="bx endo" />
+          <text x="107" y="183" class="bx-t endo">Endogenous</text>
+          <text x="107" y="203" class="bx-s">agent-driven actions</text>
+          <rect x="318" y="156" width="190" height="62" rx="12" class="bx exo" />
+          <text x="413" y="183" class="bx-t exo">Exogenous</text>
+          <text x="413" y="203" class="bx-s">passive physical events</text>
+          <line x1="210" y1="187" x2="310" y2="187" class="b-arrow" marker-start="url(#b-ah)" marker-end="url(#b-ah)" />
+          <circle cx="260" cy="187" r="13" class="b-x" /><path d="M254,181 L266,193 M266,181 L254,193" class="b-xm" />
+          <defs><marker id="b-ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#a3acbb" /></marker></defs>
+        </svg>
+        <figcaption>Temporal localization is learned only from temporal supervision (about +30 points on temporal adjacency versus near zero), and passive physical events do not teach agent-driven actions (WorldPrediction −10.2, ActionEQA −1.7).</figcaption>
+      </figure>
+    </div>
+
+    <div class="rule">
+      <div class="rule-text"><span class="rhead"><span class="rn">4</span><span class="rflag">How to know which tasks will benefit</span></span><span class="rt">Transition supervision helps transition tasks</span><span class="rx">For downstream tasks that involve no transition, such as static perception, transition supervision does not help.</span></div>
+      <figure class="rule-fig">
+        <svg viewBox={`0 0 ${CW} ${CH}`} class="chart-svg" role="img" aria-label="Benchmarks with visual transitions improve; static perception and general video QA do not">
+          {[0, 10, 20].map((t) => (<g><line x1={PL} x2={CW - PR} y1={y4(t)} y2={y4(t)} class={t === 0 ? 'zero' : 'grid'} /><text x={PL - 8} y={y4(t) + 4} class="tick">{t}</text></g>))}
+          <line x1={PL} x2={CW - PR} y1={y4(2)} y2={y4(2)} class="thr" />
+          <text x={CW - PR} y={y4(2) - 5} class="thr-l">+2</text>
+          {dots4.map((d) => (<circle cx={d.cx} cy={d.cy} r="5" class={d.st ? 'dot4 st' : 'dot4'}><title>{`${d.b}: ${fmt(d.d)}`}</title></circle>))}
+          <text x={colX[0]} y={PT + plotH + 18} class="xl">22 benchmarks with visual transitions</text>
+          <text x={colX[1]} y={PT + plotH + 18} class="xl">Static perception, general video QA</text>
+          <text x={PL} y={CH - 8} class="axl-left">Best gain over the base model (points)</text>
+        </svg>
+        <figcaption>Each dot is one external benchmark with its best controlled subset; dashed line: the +2-point threshold.</figcaption>
+      </figure>
+    </div>
+
+    <p class="prospective"><strong>Prospective validation.</strong> Training data selected by the recipe outperforms alternative mixtures of the same size on multiple held-out benchmarks. See <a href="https://arxiv.org/abs/2610.12417" target="_blank" rel="noopener">our paper</a> for details.</p>
+
   </div>
 </details>
 
 <style>
-  .recipe-list { list-style: none; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1.4rem; margin: 1.4rem auto 0; max-width: 1100px; padding: 0; }
-  .recipe-list li { display: flex; flex-direction: column; gap: 0.35rem; }
-  .rn { width: 28px; height: 28px; border-radius: 50%; background: var(--accent-color); color: #fff; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; font-size: 0.9rem; }
-  .rt { font-weight: 600; color: #1c2a3a; line-height: 1.35; }
-  .rx { font-size: 0.9rem; line-height: 1.5; color: #444; }
-  .robust { display: flex; flex-direction: column; gap: 6px; margin: 1rem 0 0.4rem; max-width: 860px; }
-  .rrow { display: grid; grid-template-columns: 190px minmax(0, 1fr); align-items: center; gap: 0.7rem; }
-  .rname { text-align: right; font-size: 0.9rem; color: #222; }
-  .rtrack { position: relative; height: 22px; background: #f2f4f8; border-radius: 4px; }
-  .rbar { position: absolute; left: 0; top: 3px; height: 16px; border-radius: 3px; background: var(--accent-color); }
-  .rval { position: absolute; top: 2px; font-size: 0.82rem; font-weight: 600; color: #333; font-variant-numeric: tabular-nums; }
-  .forest { margin: 2rem auto 0; max-width: 1000px; }
-  .frow { display: grid; grid-template-columns: 170px 190px minmax(0, 1fr) 170px 60px; align-items: center; gap: 0.7rem; padding: 0.45rem 0; border-bottom: 1px solid #eef1f6; font-size: 0.88rem; }
-  .frow:last-of-type { border-bottom: 0; }
-  .fhead { font-size: 0.78rem; color: #667; font-weight: 600; border-bottom: 1px solid #d5dbe6; }
-  .fc small { color: #778; font-weight: 500; margin-left: 0.25rem; }
-  .fv, .fp { font-variant-numeric: tabular-nums; color: #333; }
-  .ftrack { position: relative; height: 18px; }
-  .ftrack.faxis { height: 16px; }
-  .ftick { position: absolute; transform: translateX(-50%); font-size: 0.72rem; color: #778; font-weight: 500; }
-  .fzero { position: absolute; top: -4px; bottom: -4px; width: 1px; background: #9aa3b2; }
-  .fci { position: absolute; top: 8px; height: 2px; background: #1c2a3a; }
-  .fdot { position: absolute; top: 3px; width: 12px; height: 12px; margin-left: -6px; border-radius: 50%; background: var(--accent-color); border: 2px solid #fff; box-shadow: 0 0 0 1px var(--accent-color); }
-  .forest figcaption { margin-top: 0.8rem; font-size: 0.88rem; line-height: 1.5; color: #556; }
-  @media (max-width: 900px) { .recipe-list { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-  @media (max-width: 760px) {
-    .recipe-list { grid-template-columns: 1fr; }
-    .rrow { grid-template-columns: 130px minmax(0, 1fr); }
-    .frow { grid-template-columns: 1fr 1fr; }
-    .frow .ftrack { grid-column: 1 / -1; }
-    .fhead { display: none; }
-  }
+  .rule { display: grid; grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.6fr); gap: 1.4rem 2rem; align-items: center; padding: 1.4rem 0; border-bottom: 1px solid #eef1f6; }
+  .rule-text { display: flex; flex-direction: column; gap: 0.45rem; }
+  .rhead { display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap; }
+  .rflag { font-size: 0.8rem; font-weight: 700; color: #2453c4; background: #eaf0fd; border-radius: 999px; padding: 0.22rem 0.7rem; }
+  .rn { width: 30px; height: 30px; border-radius: 50%; background: #1c2a5a; color: #fff; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; font-size: 0.95rem; }
+  .rt { font-size: 1.08rem; font-weight: 700; color: #14213a; line-height: 1.35; }
+  .rx { font-size: 0.95rem; line-height: 1.6; color: #3a4558; }
+  .rule-fig { margin: 0; }
+  .rule-fig img { width: 100%; height: auto; border-radius: 8px; border: 1px solid #eef1f6; }
+  .rule-fig figcaption { margin-top: 0.5rem; font-size: 0.85rem; line-height: 1.5; color: #556; }
+  .chart-svg { width: 100%; height: auto; display: block; }
+  .grid { stroke: #eef1f6; stroke-width: 1; }
+  .zero { stroke: #9aa3b2; stroke-width: 1; }
+  .tick { font-size: 11px; fill: #7d8798; text-anchor: end; }
+  .bar2 { fill: #2453c4; }
+  .val { font-size: 12px; font-weight: 700; fill: #1c2a5a; text-anchor: middle; }
+  .xl { font-size: 11.5px; fill: #3a4558; text-anchor: middle; }
+  .axl { font-size: 11.5px; font-weight: 600; fill: #7d8798; text-anchor: middle; }
+  .axl-left { font-size: 11px; font-weight: 600; fill: #7d8798; }
+  .axis-arrow { stroke: #7d8798; stroke-width: 1.5; }
+  .thr { stroke: #c0392b; stroke-width: 1; stroke-dasharray: 4 3; opacity: 0.7; }
+  .thr-l { font-size: 10.5px; fill: #c0392b; text-anchor: end; }
+  .dot4 { fill: #2453c4; fill-opacity: 0.85; stroke: #fff; stroke-width: 1.2; }
+  .dot4.st { fill: #9aa3b2; }
+  .b-row { font-size: 11px; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; fill: #7d8798; }
+  .bx { stroke-width: 1.2; }
+  .bx.tmp { fill: #e7f5ef; stroke: #0f8a6a; }
+  .bx.oth { fill: #f2f4f8; stroke: #c9d0dc; }
+  .bx.endo { fill: #e6edfc; stroke: #2453c4; }
+  .bx.exo { fill: #fdf1e6; stroke: #c2660a; }
+  .bx-t { font-size: 16px; font-weight: 700; fill: #1c2a5a; text-anchor: middle; }
+  .bx-t.tmp { fill: #0b6b52; }
+  .bx-t.endo { fill: #1c3f99; }
+  .bx-t.exo { fill: #8a4a0a; }
+  .bx-s { font-size: 11px; fill: #556; text-anchor: middle; }
+  .b-arrow { stroke: #a3acbb; stroke-width: 2.5; }
+  .b-x { fill: #fff; stroke: #b42318; stroke-width: 2; }
+  .b-xm { stroke: #b42318; stroke-width: 2.6; stroke-linecap: round; }
+  .prospective { margin: 1.4rem 0 0; padding: 0.9rem 1.1rem; background: #f4f7fe; border: 1px solid #dfe6f7; border-radius: 10px; font-size: 0.98rem !important; color: #2b3447 !important; }
+  .prospective a { color: #2453c4; font-weight: 600; }
+  @media (max-width: 860px) { .rule { grid-template-columns: 1fr; } }
 </style>

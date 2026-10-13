@@ -7,9 +7,8 @@ const items = [
 ];
 ---
 <section id="resources" class="content-section">
-  <div class="section-container narrow">
-    <span class="section-tag">Resources</span>
-    <h2 class="section-title left">Data, code, and models</h2>
+  <div class="section-container">
+    <h2 class="section-title">Resources</h2>
     <div class="res-grid">
       {items.map((i) => (
         (i.href
@@ -21,8 +20,8 @@ const items = [
 </section>
 
 <style>
-  .res-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; margin-top: 1rem; }
-  .res-card { background: #fff; border: 1px solid #e8ecf3; border-radius: 10px; padding: 1rem 1.1rem; display: flex; flex-direction: column; gap: 0.45rem; }
+  .res-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; margin: 1.2rem auto 0; max-width: 1000px; }
+  .res-card { background: #fff; border: 1px solid #e6eaf2; border-radius: 12px; padding: 1.1rem 1.2rem; display: flex; flex-direction: column; gap: 0.45rem; box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04), 0 8px 24px rgba(16, 24, 40, 0.05); }
   .res-card .rt { font-weight: 600; color: #1c2a3a; }
   .res-card .rx { font-size: 0.9rem; line-height: 1.5; color: #444; flex: 1; }
   .res-card .soon { align-self: flex-start; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; color: var(--accent-color); background: #eef2fb; border-radius: 999px; padding: 0.2rem 0.6rem; }
