@@ -23,10 +23,8 @@ const slope = sxy / sxx, icpt = my - slope * mx;
 const r = sxy / Math.sqrt(sxx * syy);
 const FX0 = 4, FX1 = 25.5;
 
-// Grid of action types x reasoning types for the spread schematic (trained cell at TR, TC).
-const GROWS = 5, GCOLS = 6, GC = 22, GP = 26, GY = 40, TR = 1, TC = 2;
-const GW = GCOLS * GP - (GP - GC), GH = GROWS * GP - (GP - GC);
-const GRID = Array.from({ length: GROWS * GCOLS }, (_, k) => [Math.floor(k / GCOLS), k % GCOLS]);
+// One row of data cells for the spread schematic: the trained cell, then data from other sources.
+const CN = 7, CS = 30, CP = 40, CX0 = 244;
 
 // Evidence schematics.
 // Downstream benchmarks of the content control (paper appendix).
@@ -91,22 +89,22 @@ const DSB = [
       <div class="items">
         <div class="item">
           <h4 class="it"><span class="it-n">A.1</span>Each source improves far beyond the slice it trains on</h4>
-          <svg viewBox="0 0 600 236" role="img" aria-label="If each source learned only its own slice, only the trained cell would improve; instead, gains appear across the whole grid">
-            {[{ cx: 150, lit: false }, { cx: 450, lit: true }].map((p) => (
+          <svg viewBox="0 0 640 156" role="img" aria-label="If each source learned only its own slice, only the trained data would improve; instead, data from other sources improve too">
+            <text x={CX0 + CS / 2} y="20" class="g-ax">Trained</text>
+            <text x={CX0 + CP + (CN - 1) * CP / 2 - (CP - CS) / 2} y="20" class="g-ax">Other sources of data</text>
+            <line x1={CX0 + CP} x2={CX0 + CN * CP - (CP - CS)} y1="30" y2="30" class="s-brace" />
+            {[{ y: 44, lit: false }, { y: 112, lit: true }].map((r) => (
               <g>
-                <text x={p.cx} y="20" class="s-lab">{p.lit ? 'What we observe' : 'If each source learned only its own slice'}</text>
-                <text transform={`translate(${p.cx - GW / 2 - 12} ${GY + GH / 2}) rotate(-90)`} class="g-ax">Kind of transition</text>
-                <text x={p.cx} y={GY + GH + 18} class="g-ax">Kind of question</text>
-                {GRID.map(([r, c]) => (
-                  <rect x={p.cx - GW / 2 + c * GP} y={GY + r * GP} width={GC} height={GC} rx="4"
-                    class={r === TR && c === TC ? 'g-cell on' : p.lit ? 'g-cell lit' : 'g-cell'} />
+                {r.lit
+                  ? <text x="226" y={r.y + 20} class="s-lab ta-e">What we observe</text>
+                  : <g><text x="226" y={r.y + 11} class="s-lab ta-e">If each source learned</text><text x="226" y={r.y + 28} class="s-lab ta-e">only its own slice</text></g>}
+                {Array.from({ length: CN }, (_, k) => (
+                  <rect x={CX0 + k * CP} y={r.y} width={CS} height={CS} rx="6" class={k === 0 ? 'g-cell on' : r.lit ? 'g-cell lit' : 'g-cell'} />
                 ))}
-                <text x={p.cx} y="226" class={p.lit ? 's-res' : 's-no'}>{p.lit ? '✓ gains across the grid' : '✕ only the trained cell — ruled out'}</text>
+                <text x={CX0 + CN * CP + 8} y={r.y + 20} class={r.lit ? 's-res ta-s' : 's-no ta-s'}>{r.lit ? '✓ improved too' : '✕ ruled out'}</text>
               </g>
             ))}
-            <line x1="300" x2="300" y1="8" y2="214" class="s-div" />
           </svg>
-          <div class="g-key"><span class="k on"></span>trained<span class="k lit"></span>improved</div>
         </div>
         <div class="item">
           <h4 class="it"><span class="it-n">A.2</span>Questions derived from the same transition become correlated</h4>
@@ -324,12 +322,8 @@ const DSB = [
   .g-cell { fill: #f1f3f7; stroke: #e3e8f1; stroke-width: 1; }
   .g-cell.lit { fill: #a9bdf0; stroke: #8fa8ea; }
   .g-cell.on { fill: #1c2a5a; stroke: #1c2a5a; }
-  .g-ax { font-size: 11.5px; fill: #8a94a6; text-anchor: middle; }
+  .g-ax { font-size: 12.5px; font-weight: 600; fill: #6b7486; text-anchor: middle; }
   .s-no { font-size: 14px; font-weight: 700; fill: #b42318; text-anchor: middle; }
-  .g-key { display: flex; align-items: center; justify-content: center; gap: 0.4rem; font-size: 0.85rem; color: #556; }
-  .g-key .k { display: inline-block; width: 14px; height: 14px; border-radius: 3px; margin-left: 0.6rem; }
-  .g-key .k.on { background: #1c2a5a; margin-left: 0; }
-  .g-key .k.lit { background: #a9bdf0; }
   .s-key { font-size: 13px; fill: #4a5263; text-anchor: middle; }
   .s-keyv { font-size: 17px; font-weight: 800; fill: #2453c4; }
   .s-lab { font-size: 13px; font-weight: 600; fill: #4a5263; text-anchor: middle; }
