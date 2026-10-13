@@ -22,12 +22,12 @@ const items = [
 
 <style>
   .res-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; margin-top: 1rem; }
-  .res-card { background: #fff; border: 1px solid var(--card-border); border-radius: 14px; padding: 1rem 1.1rem; display: flex; flex-direction: column; gap: 0.45rem; }
+  .res-card { background: #fff; border: 1px solid #e8ecf3; border-radius: 10px; padding: 1rem 1.1rem; display: flex; flex-direction: column; gap: 0.45rem; }
   .res-card .rt { font-weight: 600; color: #1c2a3a; }
   .res-card .rx { font-size: 0.9rem; line-height: 1.5; color: #444; flex: 1; }
   .res-card .soon { align-self: flex-start; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; color: var(--accent-color); background: #eef2fb; border-radius: 999px; padding: 0.2rem 0.6rem; }
   .res-card.is-link { text-decoration: none; color: inherit; transition: transform 0.15s ease, box-shadow 0.15s ease; }
-  .res-card.is-link:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(36, 83, 196, 0.14); }
+  .res-card.is-link:hover { border-color: var(--accent-color); }
   .res-card .soon.avail { color: #fff; background: var(--accent-color); }
   @media (max-width: 760px) { .res-grid { grid-template-columns: 1fr; } }
 </style>

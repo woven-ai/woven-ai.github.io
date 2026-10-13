@@ -12,44 +12,68 @@ const colTitles: Record<string, string> = {
   Otm: 'Outcome prediction', Cue: 'Cued prediction', Ord: 'Temporal ordering', Adj: 'Temporal adjacency',
   Geo: 'Geometric perturbation', App: 'Appearance perturbation',
 };
+const human = DEFICIT_ROWS.find((r) => r.model === 'Human');
+const models = DEFICIT_ROWS.filter((r) => r.model !== 'Human');
+const tableRows = [...models, ...(human ? [human] : [])];
 ---
-<section id="deficit" class="content-section alt-background">
+<section id="deficit" class="content-section">
   <div class="section-container narrow">
-    <span class="section-tag">Question 1 · Do current MLLMs show a deficit?</span>
+    <span class="section-tag">1 · Deficit</span>
     <h2 class="section-title left">Current MLLMs show a substantial and systematic deficit</h2>
-    <p>
-      To establish the need for training, we evaluate 38 frontier MLLMs on the in-distribution and state-perturbation test sets.
-      The best model, GPT-5.4, reaches 65.8% in-distribution accuracy against 92.3% for humans (the mean of three annotators), and the next three fall between 57.8% and 63.2%.
-      The gap persists across model scales, and it has a consistent structure across model families: for every model, temporal adjacency is harder than temporal ordering,
-      counterfactual removal is harder than counterfactual substitution, and accuracy drops more under geometric than under appearance changes.
+    <p class="lead">
+      We evaluate 38 frontier MLLMs. The strongest, GPT-5.4, reaches 65.8% in-distribution accuracy, while human annotators reach {human?.v[0].toFixed(1)}%.
+      The failures recur across model families and persist with scale.
     </p>
-  </div>
-  <div class="section-container">
-    <div class="table-scroll" role="region" aria-label="Accuracy of the four strongest models and humans" tabindex="0">
-      <table class="data-table">
-        <thead>
-          <tr>
-            {groups.map((g) => <th colspan={g.span} class="group">{g.label}</th>)}
-          </tr>
-          <tr>
-            <th class="rowhead">Accuracy (%)</th>
-            {DEFICIT_COLS.map((c) => <th title={colTitles[c] ?? c}>{c}</th>)}
-          </tr>
-        </thead>
-        <tbody>
-          {DEFICIT_ROWS.map((r) => (
-            <tr class={r.model === 'Human' ? 'human' : ''}>
-              <th class="rowhead">{r.model}</th>
-              {r.v.map((x) => <td>{x.toFixed(1)}</td>)}
-            </tr>
-          ))}
-        </tbody>
-      </table>
+    <div class="acc-bars" role="list" aria-label="In-distribution accuracy of the four strongest models">
+      {models.map((r) => (
+        <div class="arow" role="listitem">
+          <span class="aname">{r.model}</span>
+          <span class="atrack"><span class="abar" style={`width:${r.v[0]}%`}></span><span class="aval" style={`left:calc(${r.v[0]}% + 6px)`}>{r.v[0].toFixed(1)}</span></span>
+        </div>
+      ))}
     </div>
-    <p class="table-note">
-      In-distribution accuracy overall, by action type (Exo: passive physical events; Perc: camera motion; Insp: object inspection; Navi: navigation; Mani: object manipulation)
-      and by reasoning type (Fwd/Inv: forward/inverse dynamics; Rmv/Sub: counterfactual removal/substitution; Otm/Cue: outcome/cued prediction; Ord/Adj: temporal ordering/adjacency),
-      and state-perturbation accuracy under geometric and appearance changes. Results for all 38 models are in the paper.
-    </p>
+    <p class="table-note">In-distribution accuracy (%) of the four strongest of the 38 models; chance is 25%.</p>
+  </div>
+
+  <div class="section-container">
+    <details class="more">
+      <summary>Accuracy by action type, reasoning type, and state perturbation</summary>
+      <div class="table-scroll" role="region" aria-label="Accuracy by category" tabindex="0">
+        <table class="data-table">
+          <thead>
+            <tr>
+              {groups.map((g) => <th colspan={g.span} class="group">{g.label}</th>)}
+            </tr>
+            <tr>
+              <th class="rowhead">Accuracy (%)</th>
+              {DEFICIT_COLS.map((c) => <th title={colTitles[c] ?? c}>{c}</th>)}
+            </tr>
+          </thead>
+          <tbody>
+            {tableRows.map((r) => (
+              <tr class={r.model === 'Human' ? 'human' : ''}>
+                <th class="rowhead">{r.model}</th>
+                {r.v.map((x) => <td>{x.toFixed(1)}</td>)}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <p class="table-note">
+        Exo: passive physical events; Perc: camera motion; Insp: object inspection; Navi: navigation; Mani: object manipulation;
+        Fwd/Inv: forward/inverse dynamics; Rmv/Sub: counterfactual removal/substitution; Otm/Cue: outcome/cued prediction; Ord/Adj: temporal ordering/adjacency;
+        Geo/App: geometric/appearance perturbation. Results for all 38 models are in the paper.
+      </p>
+    </details>
   </div>
 </section>
+
+<style>
+  .acc-bars { display: flex; flex-direction: column; gap: 8px; margin: 1.4rem 0 0.2rem; }
+  .arow { display: grid; grid-template-columns: 150px minmax(0, 1fr); align-items: center; gap: 0.8rem; }
+  .aname { text-align: right; font-size: 0.92rem; color: #222; }
+  .atrack { position: relative; height: 24px; background: #f2f4f8; border-radius: 4px; }
+  .abar { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 4px; background: var(--accent-color); }
+  .aval { position: absolute; top: 3px; font-size: 0.85rem; font-weight: 600; color: #333; font-variant-numeric: tabular-nums; }
+  @media (max-width: 520px) { .arow { grid-template-columns: 110px minmax(0, 1fr); } }
+</style>

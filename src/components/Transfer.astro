@@ -6,35 +6,14 @@ const pos = (x: number) => ((x - MIN) / (MAX - MIN)) * 100;
 const zero = pos(0);
 const firstStatic = TRANSFER.findIndex((r) => r.static);
 const thr = pos(2);
-const learn = [
-  { label: 'In-distribution', from: '26.4%', to: '89.3%' },
-  { label: 'Held-out scenes', from: '27.8%', to: '88.2%' },
-  { label: 'State perturbation', from: '21.1%', to: '38.3%' },
-];
 ---
 <section id="transfer" class="content-section">
   <div class="section-container narrow">
-    <span class="section-tag">Question 2 · Can it be learned, and does it transfer?</span>
+    <span class="section-tag">2 · Transfer</span>
     <h2 class="section-title left">Visual transition reasoning is learnable and transfers broadly</h2>
-    <p>
-      Supervised fine-tuning of Qwen2.5-VL-3B-Instruct on the full WOVEN training set raises WOVEN accuracy as follows; the gains also hold at larger model scales and in a second model family.
-    </p>
-  </div>
-  <div class="section-container narrow">
-    <div class="learn-cards">
-      {learn.map((l) => (
-        <div class="learn-card"><span class="l">{l.label}</span><span class="v"><span class="from">{l.from}</span><span class="arrow" aria-hidden="true">→</span><span class="to">{l.to}</span></span></div>
-      ))}
-    </div>
-    <p>
-      Each controlled subset of the training set (one action type × one reasoning family, about 2,000 items) also raises in-distribution accuracy on its own, by 6.1 to 25.3 percentage points, including on action types it does not train on.
-      The learning is data-efficient: with about 7 hours of generated video, WOVEN post-training yields a larger gain on a spatial-reasoning benchmark than mid-training the same backbone on 125,000 hours of video (Orca).
-    </p>
-    <h3 class="sub-title">Transfer to 22 of 26 external benchmarks</h3>
-    <p>
-      Evaluated zero-shot on 26 external benchmarks, the full training set improves 12 of them, by up to 24.0 percentage points on SAT.
-      The controlled subsets transfer as well: with the best subset chosen for each benchmark, the coverage rises to <strong>22 of 26</strong>, that is, every benchmark that involves visual transitions, with gains of up to <strong>27.3 percentage points</strong>.
-      The 4 benchmarks of static perception and general video QA do not improve under any training, so the gains do not come from an overall stronger model or from better multiple-choice answering.
+    <p class="lead">
+      Fine-tuning Qwen2.5-VL-3B-Instruct on WOVEN raises in-distribution accuracy from 26.4% to <strong>89.3%</strong> (held-out scenes: 27.8% → 88.2%; state perturbation: 21.1% → 38.3%).
+      Evaluated zero-shot, controlled subsets of about 2,000 items each improve <strong>22 of 26</strong> external benchmarks, by up to <strong>27.3 points</strong>; the 4 benchmarks of static perception and general video QA do not improve.
     </p>
   </div>
 
@@ -70,23 +49,22 @@ const learn = [
           );
         })}
       </div>
-      <figcaption id="transfer-cap">
-        <strong>Gain over the base model on each external benchmark</strong> (percentage points; Qwen2.5-VL-3B-Instruct), using the best-performing controlled subset for that benchmark, named on the right; the gain is the larger of the SFT and GRPO gains.
-        Bars are colored by the reasoning family of that subset; gray bars are the four benchmarks of static perception and general video QA. The dashed line marks the +2-point threshold for counting a benchmark as improved.
-      </figcaption>
+      <figcaption id="transfer-cap">Gain over the base model (percentage points) with the best controlled subset for each benchmark, named on the right; the larger of the SFT and GRPO gains. Dashed line: the +2-point threshold.</figcaption>
     </figure>
+    <details class="more">
+      <summary>More transfer results</summary>
+      <ul class="more-list">
+        <li>The full training set improves 12 of the 26 benchmarks, by up to 24.0 points on SAT.</li>
+        <li>Each controlled subset raises in-distribution WOVEN accuracy by 6.1 to 25.3 points, including on action types it does not train on.</li>
+        <li>With about 7 hours of generated video, WOVEN post-training yields a larger gain on a spatial-reasoning benchmark than mid-training the same backbone on 125,000 hours of video (Orca).</li>
+        <li>The gains hold at larger model scales and in a second model family.</li>
+      </ul>
+    </details>
   </div>
 </section>
 
 <style>
-  .learn-cards { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.9rem; margin: 1.1rem 0 1.3rem; }
-  .learn-card { background: #fff; border: 1px solid var(--card-border); border-radius: 12px; padding: 0.85rem 1rem; display: flex; flex-direction: column; gap: 0.3rem; }
-  .learn-card .l { font-size: 0.85rem; color: #556; }
-  .learn-card .v { display: flex; align-items: baseline; gap: 0.45rem; font-variant-numeric: tabular-nums; }
-  .learn-card .from { font-size: 1.05rem; color: #778; }
-  .learn-card .arrow { color: #99a; }
-  .learn-card .to { font-size: 1.6rem; font-weight: 700; color: var(--accent-color); }
-  .chart { margin: 1.4rem auto 0; max-width: 1000px; background: #fff; border: 1px solid var(--card-border); border-radius: 14px; padding: 1.1rem 1.2rem 1rem; }
+  .chart { margin: 1.6rem auto 0; max-width: 1000px; }
   .legend { display: flex; flex-wrap: wrap; gap: 0.4rem 1.1rem; font-size: 0.85rem; color: #445; margin-bottom: 0.8rem; }
   .lg { display: inline-flex; align-items: center; gap: 0.4rem; }
   .lg i { width: 12px; height: 12px; border-radius: 3px; display: inline-block; }
@@ -103,10 +81,9 @@ const learn = [
   .val { position: absolute; top: 1px; font-size: 0.78rem; font-weight: 600; color: #333; font-variant-numeric: tabular-nums; white-space: nowrap; }
   .bar-row.is-static .bname, .bar-row.is-static .bsub { color: #889; }
   .bar-row.first-static { margin-top: 10px; padding-top: 10px; border-top: 1px dashed #d5dbe6; }
-  .chart figcaption { margin-top: 0.9rem; font-size: 0.9rem; line-height: 1.55; color: #444; }
+  .chart figcaption { margin-top: 0.8rem; font-size: 0.88rem; line-height: 1.5; color: #556; }
   @media (max-width: 760px) {
-    .learn-cards { grid-template-columns: 1fr; }
-    .bar-row, .axis-row { grid-template-columns: 112px minmax(0, 1fr); }
+      .bar-row, .axis-row { grid-template-columns: 112px minmax(0, 1fr); }
     .bsub { display: none; }
     .bname { font-size: 0.8rem; }
   }

@@ -1,5 +1,5 @@
 ---
-// Hero.astro: title block, key takeaway, resources, authors, teaser, and the four research questions.
+// Hero.astro: title, authors, one-sentence takeaway, resource buttons, teaser, and four headline numbers.
 const authorLines = [
   [
     { name: 'Zheyu Fan', aff: '1', url: 'https://lorduky.github.io/' },
@@ -20,11 +20,11 @@ const authorLines = [
 ];
 const affiliations = ['Northwestern University', 'Carnegie Mellon University', 'UNC Chapel Hill', 'Amazon'];
 
-const questions = [
-  { id: 'deficit', tag: 'Question 1', title: 'Is there a systematic deficit?', stat: '38', unit: 'frontier MLLMs evaluated', text: 'The strongest reaches 65.8% in distribution; humans reach 92.3%. The failures recur across model families.' },
-  { id: 'transfer', tag: 'Question 2', title: 'Is it learnable and transferable?', stat: '22 / 26', unit: 'external benchmarks improved', text: 'Controlled subsets of about 2,000 items each, with gains of up to 27.3 percentage points.' },
-  { id: 'primitive', tag: 'Question 3', title: 'Is it a shared primitive?', stat: 'r = 0.86', unit: 'capability gain vs. transfer', text: 'WOVEN data can replace 30–50% of a task’s own training data with comparable accuracy.' },
-  { id: 'recipe', tag: 'Question 4', title: 'Is there a training recipe?', stat: '5 / 5', unit: 'prospective comparisons as predicted', text: 'Select supervision by the reasoning operation it teaches; larger state changes give robustness.' },
+const stats = [
+  { id: 'deficit', v: '38', l: 'frontier MLLMs show a systematic deficit' },
+  { id: 'transfer', v: '22 / 26', l: 'external benchmarks improved' },
+  { id: 'primitive', v: 'r = 0.86', l: 'between WOVEN gain and downstream gain' },
+  { id: 'recipe', v: '5 / 5', l: 'recipe predictions confirmed on held-out benchmarks' },
 ];
 ---
 <section id="hero" class="content-section hero-section">
@@ -32,8 +32,6 @@ const questions = [
     <img src="logo/woven_logo.png" alt="WOVEN" width="900" height="256" />
   </h1>
   <p class="subtitle">Weaving Visual World Modeling into Multimodal LLMs</p>
-
-  <p class="research-question">Can visual transition reasoning serve as a shared training primitive for multimodal LLMs?</p>
 
   <div class="authors-section">
     {authorLines.map((line, li) => (
@@ -48,10 +46,7 @@ const questions = [
     </p>
   </div>
 
-  <div class="takeaway">
-    <span class="takeaway-label">Key Takeaway</span>
-    <p>Training subsets of only about 2,000 WOVEN items each collectively improve <strong>22 of 26</strong> external benchmarks, by up to <strong>27.3 percentage points</strong>. The gains come from one shared capability, and controlled comparisons yield a <strong>training recipe</strong> for visual world modeling, validated prospectively on held-out benchmarks.</p>
-  </div>
+  <p class="takeaway">Training subsets of only about 2,000 WOVEN items each collectively improve <strong>22 of 26</strong> external benchmarks, by up to <strong>27.3 percentage points</strong>, and controlled comparisons yield a <strong>training recipe</strong> for visual world modeling.</p>
 
   <div class="resources-section">
     <div class="resources-buttons">
@@ -76,30 +71,21 @@ const questions = [
 
   <figure class="teaser">
     <a href="figures/teaser.jpg" target="_blank" rel="noopener" class="zoom-link" title="Open full-size image"><img src="figures/teaser.jpg" alt="Overview figure. Panel 1: MLLMs fail on spatial, embodied, physical and temporal tasks. Panel 2: these failures share reasoning about how visual states, actions and outcomes relate. Panel 3: WOVEN generates (s, a, s′) transitions with a video generation model and turns them into error-typed multiple-choice supervision. Panel 4: training on WOVEN improves 22 of 26 external benchmarks and yields a training recipe." width="2000" height="1125" fetchpriority="high" /></a>
-    <figcaption><strong>Overview.</strong> (1) MLLMs fail across spatial, embodied, physical, and temporal tasks. (2) These failures share a weakness: reasoning about how visual states, actions, and outcomes relate. (3) WOVEN generates (s, a, s′) transitions with a video generation model, organizes them along controlled axes of reasoning, action, and scene, and turns them into error-typed multiple-choice supervision. (4) Training on WOVEN improves 22 of 26 external benchmarks; the gains come from a shared primitive that different sources build and different tasks use; and controlled comparisons yield a training recipe.</figcaption>
   </figure>
 
-  <div class="question-cards">
-    {questions.map((q) => (
-      <a href={`#${q.id}`} class="question-card">
-        <span class="q-tag">{q.tag}</span>
-        <span class="q-title">{q.title}</span>
-        <span class="q-stat">{q.stat}</span>
-        <span class="q-unit">{q.unit}</span>
-        <span class="q-text">{q.text}</span>
-      </a>
+  <nav class="stat-strip" aria-label="Main findings">
+    {stats.map((st) => (
+      <a href={`#${st.id}`}><span class="v">{st.v}</span><span class="l">{st.l}</span></a>
     ))}
-  </div>
+  </nav>
 </section>
 
 <style>
   .wordmark { margin: 0.5rem auto 0; line-height: 0; }
   .wordmark img { width: min(520px, 82vw); height: auto; }
   .subtitle { font-size: clamp(1.15rem, 2.4vw, 1.6rem); font-weight: 600; color: #1c2a3a; margin: 1rem auto 0; max-width: 820px; }
-  .research-question { margin: 1.4rem auto 0; max-width: 760px; font-size: clamp(1.02rem, 1.8vw, 1.2rem); color: #334; font-style: italic; }
-  .takeaway { margin: 1.4rem auto 0; max-width: 860px; text-align: left; background: #fff; border: 1px solid rgba(36, 83, 196, 0.25); border-left: 5px solid var(--accent-color); border-radius: 12px; padding: 1rem 1.25rem; box-shadow: 0 4px 16px rgba(36, 83, 196, 0.08); }
-  .takeaway-label { display: inline-block; font-size: 0.78rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--accent-color); margin-bottom: 0.35rem; }
-  .takeaway p { font-size: 1.04rem; line-height: 1.65; color: #222; }
+  .takeaway { margin: 1.5rem auto 0; max-width: 820px; font-size: clamp(1.05rem, 1.7vw, 1.2rem); line-height: 1.6; color: #1f2a3a; }
+  .takeaway strong { color: var(--accent-color); }
   .resource-button.is-soon { opacity: 0.55; cursor: default; }
   .resource-button.is-soon:hover { transform: none; }
   .resource-button small { font-size: 0.7rem; font-weight: 600; margin-left: 0.15rem; color: #667; text-transform: uppercase; letter-spacing: 0.04em; }
@@ -111,16 +97,15 @@ const questions = [
   .authors-line sup, .affiliations-line sup { font-size: 0.7em; margin-left: 1px; color: #556; }
   .affiliations-line { margin-top: 0.35rem; font-size: 0.95rem; color: #445; display: flex; flex-wrap: wrap; gap: 0.25rem 1.1rem; justify-content: center; }
   .teaser { margin: 2.2rem auto 0; max-width: 1100px; }
-  .teaser img { width: 100%; height: auto; border-radius: 12px; background: #fff; box-shadow: 0 4px 18px rgba(36, 83, 196, 0.12); }
-  .teaser figcaption { margin: 0.8rem auto 0; max-width: 980px; text-align: left; font-size: 0.95rem; line-height: 1.6; color: #444; }
-  .question-cards { margin: 2.2rem auto 0; max-width: 1100px; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1rem; text-align: left; }
-  .question-card { display: flex; flex-direction: column; gap: 0.3rem; background: #fff; border: 1px solid var(--card-border); border-radius: 14px; padding: 1rem 1.1rem 1.1rem; text-decoration: none; color: inherit; box-shadow: 0 2px 10px rgba(36, 83, 196, 0.06); transition: transform 0.15s ease, box-shadow 0.15s ease; }
-  .question-card:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(36, 83, 196, 0.14); }
-  .q-tag { font-size: 0.75rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--accent-color); }
-  .q-title { font-size: 1rem; font-weight: 600; color: #1c2a3a; }
-  .q-stat { font-size: 1.7rem; font-weight: 700; color: var(--accent-color); margin-top: 0.3rem; font-variant-numeric: tabular-nums; }
-  .q-unit { font-size: 0.85rem; color: #556; margin-top: -0.2rem; }
-  .q-text { font-size: 0.9rem; line-height: 1.5; color: #333; margin-top: 0.3rem; }
-  @media (max-width: 900px) { .question-cards { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-  @media (max-width: 520px) { .question-cards { grid-template-columns: 1fr; } }
+  .teaser img { width: 100%; height: auto; border-radius: 8px; background: #fff; border: 1px solid #e8ecf3; }
+  .stat-strip { margin: 2rem auto 0; max-width: 1000px; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); text-align: left; }
+  .stat-strip a { display: flex; flex-direction: column; gap: 0.25rem; padding: 0.4rem 1.1rem; border-left: 1px solid #e3e8f1; text-decoration: none; color: inherit; }
+  .stat-strip a:first-child { border-left: 0; }
+  .stat-strip a:hover .v { text-decoration: underline; text-underline-offset: 4px; }
+  .stat-strip .v { font-size: 1.75rem; font-weight: 700; color: var(--accent-color); font-variant-numeric: tabular-nums; line-height: 1.2; }
+  .stat-strip .l { font-size: 0.88rem; line-height: 1.4; color: #556; }
+  @media (max-width: 760px) {
+    .stat-strip { grid-template-columns: repeat(2, minmax(0, 1fr)); row-gap: 1rem; }
+    .stat-strip a:nth-child(3) { border-left: 0; }
+  }
 </style>
