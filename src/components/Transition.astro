@@ -8,7 +8,7 @@ import { FAMILIES } from '../data/woven';
 
     <div class="m-card">
       <div class="m-head"><span class="pill">Formalization</span><h3>Visual transition reasoning</h3></div>
-      <p class="m-text">Infer the unobserved part of a transition (s, a, s′) from its observed parts. Eight reasoning types in four families:</p>
+      <p class="m-text">Infer the unobserved part of a transition (s, a, s′) from its observed parts.</p>
       <div class="fam-grid">
         {FAMILIES.map((f) => (
           <div class="fam" style={`--fam:${f.color}`}>
@@ -22,7 +22,7 @@ import { FAMILIES } from '../data/woven';
     </div>
 
     <div class="m-card">
-      <div class="m-head"><span class="pill">Data</span><h3>Controlled transitions from a video generation model</h3></div>
+      <div class="m-head"><span class="pill">Data</span><h3>Controlled transition rollouts</h3></div>
       <p class="m-text">Rollouts of Wan2.2-I2V-A14B, several from the same initial state, become four-option questions; every wrong option is labeled with its error type.</p>
       <figure class="m-figure">
         <a href="figures/taxonomy.jpg" target="_blank" rel="noopener" class="zoom-link" title="Open full-size image"><img src="figures/taxonomy.jpg" alt="The WOVEN taxonomy. Left: the passive physical event type with its eight principles and the four agent-driven action types. Middle: the eight reasoning types in four families, each marking which element of (s, a, s′) the question asks for. Right: example scenes; restaurant and beach are held out." width="2000" height="1051" loading="lazy" /></a>
@@ -31,7 +31,7 @@ import { FAMILIES } from '../data/woven';
     </div>
 
     <div class="m-card">
-      <div class="m-head"><span class="pill">Training</span><h3>Controlled subsets</h3></div>
+      <div class="m-head"><span class="pill">Training</span><h3>Fullmix, and controlled subsets</h3></div>
       <p class="m-text">11 subsets of about 2,000 items, each pairing one action type with one reasoning family, train Qwen2.5-VL-3B-Instruct with SFT, then GRPO.</p>
       <div class="chips"><span>Replicated across scales and model families</span></div>
     </div>
