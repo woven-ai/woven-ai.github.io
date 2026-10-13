@@ -23,6 +23,11 @@ const slope = sxy / sxx, icpt = my - slope * mx;
 const r = sxy / Math.sqrt(sxx * syy);
 const FX0 = 4, FX1 = 25.5;
 
+// Grid of action types x reasoning types for the spread schematic (trained cell at TR, TC).
+const GROWS = 5, GCOLS = 6, GC = 22, GP = 26, GY = 40, TR = 1, TC = 2;
+const GW = GCOLS * GP - (GP - GC), GH = GROWS * GP - (GP - GC);
+const GRID = Array.from({ length: GROWS * GCOLS }, (_, k) => [Math.floor(k / GCOLS), k % GCOLS]);
+
 // Evidence schematics.
 // Content control (SAT, paper appendix, mean of 3 seeds): no training, correct transitions,
 // the same format with wrong transitions (scrambled, mirrored), and other multiple-choice data.
@@ -95,32 +100,23 @@ const CG = [
       <div class="ev-head"><span class="ev-n">a</span><h3 class="ev-t">Different sources improve the same capability? <span class="yes">— Yes</span></h3></div>
       <div class="items">
         <div class="item">
-          <h4 class="it">Training on one action type also improves the other action types</h4>
-          <svg viewBox="0 0 600 176" role="img" aria-label="Training on one action type also improves the four untrained action types; 43 of 44 untrained cases improve">
-            <defs><marker id="m1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#2453c4" /></marker></defs>
-            <path d="M100,64 V30 H500" class="s-arr" />
-            {[200, 300, 400, 500].map((x) => (<line x1={x} y1="30" x2={x} y2="60" class="s-arr" marker-end="url(#m1)" />))}
-            <circle cx="100" cy="88" r="24" class="n-on" />
-            {[200, 300, 400, 500].map((x) => (<g><circle cx={x} cy="88" r="24" class="n-off" /><text x={x} y="94" class="n-up">▲</text></g>))}
-            <text x="100" y="132" class="s-t">Trained</text>
-            <line x1="176" x2="524" y1="124" y2="124" class="s-brace" />
-            <text x="350" y="142" class="s-t">Untrained action types</text>
-            <text x="300" y="170" class="s-key"><tspan class="s-keyv">43 / 44</tspan> untrained cases improve</text>
+          <h4 class="it">Each source improves far beyond the slice it trains on</h4>
+          <svg viewBox="0 0 600 236" role="img" aria-label="If each source learned only its own slice, only the trained cell would improve; instead, gains appear across the whole grid">
+            {[{ cx: 150, lit: false }, { cx: 450, lit: true }].map((p) => (
+              <g>
+                <text x={p.cx} y="20" class="s-lab">{p.lit ? 'What we observe' : 'If each source learned only its own slice'}</text>
+                <text transform={`translate(${p.cx - GW / 2 - 12} ${GY + GH / 2}) rotate(-90)`} class="g-ax">Action type</text>
+                <text x={p.cx} y={GY + GH + 18} class="g-ax">Reasoning type</text>
+                {GRID.map(([r, c]) => (
+                  <rect x={p.cx - GW / 2 + c * GP} y={GY + r * GP} width={GC} height={GC} rx="4"
+                    class={r === TR && c === TC ? 'g-cell on' : p.lit ? 'g-cell lit' : 'g-cell'} />
+                ))}
+                <text x={p.cx} y="226" class={p.lit ? 's-res' : 's-no'}>{p.lit ? '✓ gains across the grid' : '✕ only the trained cell — ruled out'}</text>
+              </g>
+            ))}
+            <line x1="300" x2="300" y1="8" y2="214" class="s-div" />
           </svg>
-        </div>
-        <div class="item">
-          <h4 class="it">Training on one reasoning operation also improves other operations</h4>
-          <svg viewBox="0 0 600 176" role="img" aria-label="Training on one reasoning operation also improves other operations, by up to 48 points">
-            <defs><marker id="m2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#2453c4" /></marker></defs>
-            <path d="M125,64 V30 H500" class="s-arr" />
-            {[250, 375, 500].map((x) => (<line x1={x} y1="30" x2={x} y2="60" class="s-arr" marker-end="url(#m2)" />))}
-            <rect x="99" y="64" width="52" height="48" rx="10" class="n-on" />
-            {[250, 375, 500].map((x) => (<g><rect x={x - 26} y="64" width="52" height="48" rx="10" class="n-off" /><text x={x} y="94" class="n-up">▲</text></g>))}
-            <text x="125" y="134" class="s-t">Trained</text>
-            <line x1="214" x2="536" y1="126" y2="126" class="s-brace" />
-            <text x="375" y="144" class="s-t">Untrained operations</text>
-            <text x="300" y="170" class="s-key">up to <tspan class="s-keyv">+48</tspan> points without training on them</text>
-          </svg>
+          <div class="g-key"><span class="k on"></span>trained<span class="k lit"></span>improved</div>
         </div>
         <div class="item">
           <h4 class="it">Questions about the same transition become consistent</h4>
@@ -298,6 +294,15 @@ const CG = [
   .n-off { fill: #eef3fd; stroke: #c9d6f6; stroke-width: 1.2; }
   .n-up { font-size: 15px; fill: #1f7a4d; text-anchor: middle; }
   .s-brace { stroke: #c3cad6; stroke-width: 1.2; }
+  .g-cell { fill: #f1f3f7; stroke: #e3e8f1; stroke-width: 1; }
+  .g-cell.lit { fill: #a9bdf0; stroke: #8fa8ea; }
+  .g-cell.on { fill: #1c2a5a; stroke: #1c2a5a; }
+  .g-ax { font-size: 11.5px; fill: #8a94a6; text-anchor: middle; }
+  .s-no { font-size: 14px; font-weight: 700; fill: #b42318; text-anchor: middle; }
+  .g-key { display: flex; align-items: center; justify-content: center; gap: 0.4rem; font-size: 0.85rem; color: #556; }
+  .g-key .k { display: inline-block; width: 14px; height: 14px; border-radius: 3px; margin-left: 0.6rem; }
+  .g-key .k.on { background: #1c2a5a; margin-left: 0; }
+  .g-key .k.lit { background: #a9bdf0; }
   .s-key { font-size: 13px; fill: #4a5263; text-anchor: middle; }
   .s-keyv { font-size: 17px; font-weight: 800; fill: #2453c4; }
   .s-lab { font-size: 13px; font-weight: 600; fill: #4a5263; text-anchor: middle; }
