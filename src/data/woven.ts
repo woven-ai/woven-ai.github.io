@@ -116,6 +116,22 @@ export const WOVEN_TRAIN = [
   { s: 'navi_temporal', overall: 6.9, v: [8.1, 12.2, 4.0, 8.6, 2.9], adj: 32.0 },
   { s: 'exo_temporal', overall: 6.6, v: [8.4, 7.1, 5.5, 10.1, 2.3], adj: 30.6 },
 ];
+// Dose-response across the 11 controlled subsets: WOVEN in-distribution gain after SFT (points over the
+// base model) and the mean gain over the external benchmarks' per-configuration tables (points). Pearson r = 0.86.
+export const DOSE = [
+  { s: 'perc_causal', w: 21.90, e: 3.12 },
+  { s: 'perc_temporal', w: 5.91, e: 1.93 },
+  { s: 'insp_causal', w: 23.59, e: 2.82 },
+  { s: 'insp_cf', w: 24.37, e: 2.95 },
+  { s: 'insp_temporal', w: 5.65, e: 0.28 },
+  { s: 'navi_causal', w: 20.18, e: 1.67 },
+  { s: 'navi_temporal', w: 5.49, e: 0.85 },
+  { s: 'mani_causal', w: 19.03, e: 2.39 },
+  { s: 'mani_cf', w: 20.25, e: 3.28 },
+  { s: 'exo_physical', w: 8.25, e: 1.12 },
+  { s: 'exo_temporal', w: 5.81, e: 0.92 },
+];
+
 export const TRAINED_COL: Record<string, number> = { exo: 0, perc: 1, insp: 2, navi: 3, mani: 4 };
 
 // Robustness: gain on the state-perturbation test set after training on each subset.

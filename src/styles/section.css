@@ -160,7 +160,7 @@ details.rq > summary:hover .rq-q { color: var(--accent-color); }
 #method { background: #fff; }
 #findings { background: var(--band); }
 #resources { background: #fff; }
-#citation { background: var(--band) !important; }
+#citation { background: #fff !important; }
 .section-title { color: var(--navy); font-size: clamp(1.8rem, 3vw, 2.3rem); letter-spacing: -0.01em; margin-bottom: 0.5rem; }
 .content-section p { color: var(--ink-2); }
 .m-card, details.rq { border-color: var(--line); box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04), 0 8px 24px rgba(16, 24, 40, 0.05); }

@@ -7,7 +7,7 @@ import { FAMILIES } from '../data/woven';
     <h2 class="section-title">Method</h2>
 
     <div class="m-card">
-      <div class="m-head"><span class="pill">Capability</span><h3>Visual transition reasoning</h3></div>
+      <div class="m-head"><span class="pill">Formalization</span><h3>Visual transition reasoning</h3></div>
       <p class="m-text">Infer the unobserved part of a transition (s, a, s′) from its observed parts. Eight reasoning types in four families:</p>
       <div class="fam-grid">
         {FAMILIES.map((f) => (
@@ -32,7 +32,8 @@ import { FAMILIES } from '../data/woven';
 
     <div class="m-card">
       <div class="m-head"><span class="pill">Training</span><h3>Controlled subsets</h3></div>
-      <p class="m-text">11 subsets of about 2,000 items, each pairing one action type with one reasoning family, train Qwen2.5-VL-3B-Instruct with SFT, then GRPO.</p>
+      <p class="m-text">11 subsets of about 2,000 items, each pairing one action type with one reasoning family, train Qwen2.5-VL-3B-Instruct with SFT, then GRPO. The gains also hold across model scales and model families.</p>
+      <div class="chips"><span>Scales: 3B · 7B · 32B</span><span>Families: Qwen2.5-VL · Gemma-3</span></div>
     </div>
   </div>
 </section>

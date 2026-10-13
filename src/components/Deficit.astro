@@ -16,23 +16,54 @@ const colTitles: Record<string, string> = {
 const human = DEFICIT_ROWS.find((r) => r.model === 'Human');
 const models = DEFICIT_ROWS.filter((r) => r.model !== 'Human');
 const tableRows = [...models, ...(human ? [human] : [])];
+// Vertical bars: accuracy of the four strongest models, with dashed human and chance levels.
+const VW = 460, VH = 590, VL = 46, VR = 70, VT = 18, VB = 56;
+// Long model names wrap onto two lines at the last hyphen.
+const nameLines = (n: string) => (n.length > 9 && n.lastIndexOf('-') > 0 ? [n.slice(0, n.lastIndexOf('-')), n.slice(n.lastIndexOf('-') + 1)] : [n]);
+const vy = (v: number) => VH - VB - (v / 100) * (VH - VB - VT);
+const slot = (VW - VL - VR) / models.length, barW = slot * 0.56;
+const bx = (i: number) => VL + slot * i + (slot - barW) / 2;
 ---
 <details class="rq" id="deficit">
   <summary>
     <span class="rq-tag">RQ1</span>
     <span class="rq-q">Do current MLLMs show a deficit?</span>
-    <span class="rq-a">Yes — the strongest of 38 frontier MLLMs reaches 65.8%, and the failures recur across model families and scales.</span>
+    <span class="rq-a">Yes — the strongest of 38 frontier MLLMs reaches 65.8%, and the landscape and structure of failures are consistent across models.</span>
   </summary>
   <div class="rq-body">
-    <div class="acc-bars" role="list" aria-label="In-distribution accuracy of the four strongest models">
-      {models.map((r) => (
-        <div class="arow" role="listitem">
-          <span class="aname">{r.model}</span>
-          <span class="atrack"><span class="abar" style={`width:${r.v[0]}%`}></span><span class="aval" style={`left:calc(${r.v[0]}% + 6px)`}>{r.v[0].toFixed(1)}</span></span>
-        </div>
-      ))}
+    <div class="dual">
+      <figure class="dfig">
+        <svg viewBox={`0 0 ${VW} ${VH}`} role="img" aria-label="In-distribution accuracy of the four strongest models, with the human and chance levels">
+          {[0, 25, 50, 75, 100].map((t) => (
+            <g>
+              <line x1={VL} x2={VW - VR} y1={vy(t)} y2={vy(t)} class="vgrid" />
+              <text x={VL - 8} y={vy(t) + 4} class="vtick" text-anchor="end">{t}</text>
+            </g>
+          ))}
+          {models.map((m, i) => (
+            <g>
+              <rect x={bx(i)} y={vy(m.v[0])} width={barW} height={vy(0) - vy(m.v[0])} rx="4" class="vbar" />
+              <text x={bx(i) + barW / 2} y={vy(m.v[0]) - 7} class="vval" text-anchor="middle">{m.v[0].toFixed(1)}</text>
+              <text x={bx(i) + barW / 2} y={vy(0) + 21} class="vname" text-anchor="middle">{nameLines(m.model).map((t, k) => (<tspan x={bx(i) + barW / 2} dy={k === 0 ? 0 : 17}>{t}</tspan>))}</text>
+            </g>
+          ))}
+          {human && (
+            <g>
+              <line x1={VL} x2={VW - VR} y1={vy(human.v[0])} y2={vy(human.v[0])} class="ref human" />
+              <text x={VW - VR + 8} y={vy(human.v[0]) - 3} class="ref-lab human"><tspan x={VW - VR + 8}>Human</tspan><tspan x={VW - VR + 8} dy="17">{human.v[0].toFixed(1)}</tspan></text>
+            </g>
+          )}
+          <line x1={VL} x2={VW - VR} y1={vy(25)} y2={vy(25)} class="ref chance" />
+          <text x={VW - VR + 8} y={vy(25) - 3} class="ref-lab"><tspan x={VW - VR + 8}>Chance</tspan><tspan x={VW - VR + 8} dy="17">25</tspan></text>
+          <text transform={`translate(14 ${(VT + VH - VB) / 2}) rotate(-90)`} class="vtitle" text-anchor="middle">In-distribution accuracy (%)</text>
+        </svg>
+        <figcaption>The four strongest of 38 frontier MLLMs.</figcaption>
+      </figure>
+      <figure class="dfig">
+        <a href="figures/assess.png" target="_blank" rel="noopener" class="zoom-link" title="Open full-size image"><img src="figures/assess.png" alt="Accuracy of eight frontier MLLMs and humans by action type, reasoning type, and state perturbation. All eight models dip at the same places: temporal adjacency near chance, counterfactual removal below substitution, and geometric below appearance perturbation." width="1680" height="1440" loading="lazy" /></a>
+        <figcaption>Eight frontier MLLMs by action type, reasoning type, and state perturbation.</figcaption>
+      </figure>
     </div>
-    <p class="rq-note">In-distribution accuracy (%) of the four strongest models; chance is 25%, human annotators reach {human?.v[0].toFixed(1)}%. Results for all 38 models are in the paper.</p>
 
     <details class="more">
       <summary>Accuracy by action type, reasoning type, and state perturbation</summary>
@@ -58,11 +89,21 @@ const tableRows = [...models, ...(human ? [human] : [])];
 </details>
 
 <style>
-  .acc-bars { display: flex; flex-direction: column; gap: 8px; max-width: 760px; }
-  .arow { display: grid; grid-template-columns: 150px minmax(0, 1fr); align-items: center; gap: 0.8rem; }
-  .aname { text-align: right; font-size: 0.92rem; color: #222; }
-  .atrack { position: relative; height: 24px; background: #f2f4f8; border-radius: 4px; }
-  .abar { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 4px; background: var(--accent-color); }
-  .aval { position: absolute; top: 3px; font-size: 0.85rem; font-weight: 600; color: #333; font-variant-numeric: tabular-nums; }
-  @media (max-width: 520px) { .arow { grid-template-columns: 110px minmax(0, 1fr); } }
+  .dual { display: grid; grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr); gap: 1.6rem; align-items: end; }
+  .dfig { margin: 0; }
+  .dfig svg { width: 100%; height: auto; display: block; overflow: visible; }
+  .dfig img { width: 100%; height: auto; display: block; }
+  .dfig figcaption { margin-top: 0.5rem; text-align: center; font-size: 0.85rem; line-height: 1.5; color: #556; }
+  .vgrid { stroke: #eef1f6; stroke-width: 1; }
+  .vtick { font-size: 14px; fill: #6b7486; }
+  .vtitle { font-size: 14.5px; font-weight: 600; fill: #4a5263; }
+  .vbar { fill: var(--accent-color); }
+  .vval { font-size: 16.5px; font-weight: 700; fill: #14213a; }
+  .vname { font-size: 14.5px; font-weight: 500; fill: #1c2a3a; }
+  .ref { stroke-width: 1.6; stroke-dasharray: 6 4; }
+  .ref.human { stroke: #b8860b; }
+  .ref.chance { stroke: #9aa3b2; }
+  .ref-lab { font-size: 14px; font-weight: 600; fill: #6b7486; }
+  .ref-lab.human { fill: #9a6f08; }
+  @media (max-width: 760px) { .dual { grid-template-columns: 1fr; } }
 </style>

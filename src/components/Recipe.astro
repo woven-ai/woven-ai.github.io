@@ -4,7 +4,7 @@ import { ROBUSTNESS, ACTION_NAMES, TRANSFER } from '../data/woven';
 const fmt = (x: number, d = 1) => `${x > 0 ? '+' : x < 0 ? '−' : ''}${Math.abs(x).toFixed(d)}`;
 
 // Shared chart frame (SVG units).
-const CW = 520, CH = 250, PL = 46, PR = 12, PT = 18, PB = 58;
+const CW = 520, CH = 250, PL = 62, PR = 12, PT = 18, PB = 58;
 const plotW = CW - PL - PR, plotH = CH - PT - PB;
 const yScale = (lo: number, hi: number) => (v: number) => PT + plotH * (1 - (v - lo) / (hi - lo));
 
@@ -17,14 +17,18 @@ const bars2 = ROBUSTNESS.map((r, i) => {
   return { x: PL + i * bw2 + bw2 * 0.2, w: bw2 * 0.6, y: y2(r.d), h: y2(0) - y2(r.d), d: r.d, l1: words.slice(0, mid).join(' '), l2: words.slice(mid).join(' ') };
 });
 
-// Rule 4: gains on benchmarks with visual transitions vs static perception / general video QA.
-const y4 = yScale(-3, 30);
+// Rule 4: gains on benchmarks with visual transitions vs static perception / general video QA,
+// on a signed log scale: f(v) = sign(v) * log10(1 + |v|).
+const slog = (v: number) => Math.sign(v) * Math.log10(1 + Math.abs(v));
+const y4raw = yScale(slog(-1.5), slog(30));
+const y4 = (v: number) => y4raw(slog(v));
 const trans = TRANSFER.filter((r) => !r.static), stat = TRANSFER.filter((r) => r.static);
-const colX = [PL + plotW * 0.3, PL + plotW * 0.75];
-const jitter = (i: number, n: number) => ((i % 5) - 2) * 14 + (Math.floor(i / 5) % 2) * 7;
+const midX = PL + plotW * 0.62;
+const colX = [PL + (midX - PL) / 2, midX + (CW - PR - midX) / 2];
+const jitter = (i: number) => ((i % 5) - 2) * 15 + (Math.floor(i / 5) % 2) * 7;
 const dots4 = [
-  ...trans.map((r, i) => ({ cx: colX[0] + jitter(i, trans.length), cy: y4(r.d), b: r.b, d: r.d, st: false })),
-  ...stat.map((r, i) => ({ cx: colX[1] + (i - 1.5) * 16, cy: y4(r.d), b: r.b, d: r.d, st: true })),
+  ...trans.map((r, i) => ({ cx: colX[0] + jitter(i), cy: y4(r.d), b: r.b, d: r.d, st: false })),
+  ...stat.map((r, i) => ({ cx: colX[1] + (i - 1.5) * 18, cy: y4(r.d), b: r.b, d: r.d, st: true })),
 ];
 ---
 
@@ -32,14 +36,14 @@ const dots4 = [
   <summary>
     <span class="rq-tag">RQ4</span>
     <span class="rq-q">So what? How should we train it — a training recipe</span>
-    <span class="rq-a">Select supervision by the reasoning operation it teaches, and prefer large state changes; all five prospective tests come out as predicted.</span>
+    <span class="rq-a">Select supervision by the reasoning operation it teaches, and prefer large state changes;<br />All recipies prospectively validated on held-out tasks.</span>
   </summary>
   <div class="rq-body">
     <div class="rule">
       <div class="rule-text"><span class="rhead"><span class="rn">1</span><span class="rflag">How to prospectively choose the right data</span></span><span class="rt">Select supervision by reasoning operation</span><span class="rx">To improve a downstream task, select supervision that teaches the reasoning operation the task requires, not supervision that matches its actions, scenes, or domains.</span></div>
       <figure class="rule-fig">
         <a href="figures/grouping.png" target="_blank" rel="noopener" class="zoom-link" title="Open full-size image"><img src="figures/grouping.png" alt="Three correlation matrices of the 11 subsets' transfer profiles: raw profiles with all pairs positive; residual profiles ordered by action type with no block structure; residual profiles ordered by reasoning family with diagonal blocks." width="2400" height="673" loading="lazy" /></a>
-        <figcaption>Correlation of the 11 subsets’ transfer profiles: after removing the shared component, blocks appear only when subsets are grouped by reasoning family (right), not by action type (middle).</figcaption>
+        <figcaption>Correlation of the 11 subsets’ transfer profiles: after removing the shared component, blocks appear only when subsets are grouped by reasoning family (right), not by action, scene, domain, or visual similarity.</figcaption>
       </figure>
     </div>
 
@@ -57,13 +61,13 @@ const dots4 = [
           <line x1={PL} x2={CW - PR - 6} y1={CH - 10} y2={CH - 10} class="axis-arrow" marker-end="url(#ax-ah)" />
           <defs><marker id="ax-ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#7d8798" /></marker></defs>
           <text x={PL + plotW / 2} y={CH - 14} class="axl">Extent of the state change</text>
+                  <text transform={`translate(16 ${PT + plotH / 2}) rotate(-90)`} class="ytitle">Gain on state perturbation (points)</text>
         </svg>
-        <figcaption>Gain on the state-perturbation test (points over the base model) after training on each subset: four causal-dynamics subsets, then passive physical events.</figcaption>
       </figure>
     </div>
 
     <div class="rule">
-      <div class="rule-text"><span class="rhead"><span class="rn">3</span><span class="rflag">How to cover what transfer cannot reach</span></span><span class="rt">Supervise temporal and agent-driven tasks directly</span><span class="rx">Transfer does not cross the boundary between the temporal family and the other three, nor the boundary between passive physical events and agent-driven actions.</span></div>
+      <div class="rule-text"><span class="rhead"><span class="rn">3</span><span class="rflag">What are the internal boundaries</span></span><span class="rt">Supervise temporal and agent-driven tasks directly</span><span class="rx">Transfer does not cross the boundary between the temporal family and the other three, nor the boundary between passive physical events and agent-driven actions.</span></div>
       <figure class="rule-fig">
         <svg viewBox="0 0 520 250" class="chart-svg" role="img" aria-label="Transfer does not cross two boundaries: temporal versus other reasoning families, and endogenous (agent-driven) versus exogenous (passive) actions">
           <text x="12" y="26" class="b-row">Reasoning families</text>
@@ -87,23 +91,23 @@ const dots4 = [
           <circle cx="260" cy="187" r="13" class="b-x" /><path d="M254,181 L266,193 M266,181 L254,193" class="b-xm" />
           <defs><marker id="b-ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#a3acbb" /></marker></defs>
         </svg>
-        <figcaption>Temporal localization is learned only from temporal supervision (about +30 points on temporal adjacency versus near zero), and passive physical events do not teach agent-driven actions (WorldPrediction −10.2, ActionEQA −1.7).</figcaption>
       </figure>
     </div>
 
     <div class="rule">
-      <div class="rule-text"><span class="rhead"><span class="rn">4</span><span class="rflag">How to know which tasks will benefit</span></span><span class="rt">Transition supervision helps transition tasks</span><span class="rx">For downstream tasks that involve no transition, such as static perception, transition supervision does not help.</span></div>
+      <div class="rule-text"><span class="rhead"><span class="rn">4</span><span class="rflag">Where should we stop</span></span><span class="rt">Transition supervision helps transition tasks</span><span class="rx">For downstream tasks that involve no transition, such as static perception, transition supervision does not help.</span></div>
       <figure class="rule-fig">
         <svg viewBox={`0 0 ${CW} ${CH}`} class="chart-svg" role="img" aria-label="Benchmarks with visual transitions improve; static perception and general video QA do not">
-          {[0, 10, 20].map((t) => (<g><line x1={PL} x2={CW - PR} y1={y4(t)} y2={y4(t)} class={t === 0 ? 'zero' : 'grid'} /><text x={PL - 8} y={y4(t) + 4} class="tick">{t}</text></g>))}
+          <rect x={PL} y={PT - 6} width={midX - PL} height={plotH + 6} class="bg-trans" />
+          <rect x={midX} y={PT - 6} width={CW - PR - midX} height={plotH + 6} class="bg-stat" />
+          {[0, 5, 10, 20].map((t) => (<g><line x1={PL} x2={CW - PR} y1={y4(t)} y2={y4(t)} class={t === 0 ? 'zero' : 'grid'} /><text x={PL - 8} y={y4(t) + 4} class="tick">{t}</text></g>))}
           <line x1={PL} x2={CW - PR} y1={y4(2)} y2={y4(2)} class="thr" />
-          <text x={CW - PR} y={y4(2) - 5} class="thr-l">+2</text>
+          <text x={PL - 8} y={y4(2) + 4} class="tick thr-t">2</text>
           {dots4.map((d) => (<circle cx={d.cx} cy={d.cy} r="5" class={d.st ? 'dot4 st' : 'dot4'}><title>{`${d.b}: ${fmt(d.d)}`}</title></circle>))}
-          <text x={colX[0]} y={PT + plotH + 18} class="xl">22 benchmarks with visual transitions</text>
-          <text x={colX[1]} y={PT + plotH + 18} class="xl">Static perception, general video QA</text>
-          <text x={PL} y={CH - 8} class="axl-left">Best gain over the base model (points)</text>
+          <text x={colX[0]} y={PT + plotH + 20} class="grp trans"><tspan x={colX[0]}>22 benchmarks with</tspan><tspan x={colX[0]} dy="14">visual transitions</tspan></text>
+          <text x={colX[1]} y={PT + plotH + 20} class="grp stat"><tspan x={colX[1]}>Static perception,</tspan><tspan x={colX[1]} dy="14">general video QA</tspan></text>
+          <text transform={`translate(16 ${PT + plotH / 2}) rotate(-90)`} class="ytitle">Gain (points, log scale)</text>
         </svg>
-        <figcaption>Each dot is one external benchmark with its best controlled subset; dashed line: the +2-point threshold.</figcaption>
       </figure>
     </div>
 
@@ -113,10 +117,10 @@ const dots4 = [
 </details>
 
 <style>
-  .rule { display: grid; grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.6fr); gap: 1.4rem 2rem; align-items: center; padding: 1.4rem 0; border-bottom: 1px solid #eef1f6; }
+  .rule { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.5fr); gap: 1.4rem 2rem; align-items: center; padding: 1.4rem 0; border-bottom: 1px solid #eef1f6; }
   .rule-text { display: flex; flex-direction: column; gap: 0.45rem; }
   .rhead { display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap; }
-  .rflag { font-size: 0.8rem; font-weight: 700; color: #2453c4; background: #eaf0fd; border-radius: 999px; padding: 0.22rem 0.7rem; }
+  .rflag { font-size: 1rem; font-weight: 700; color: #2453c4; background: #eaf0fd; border-radius: 10px; padding: 0.3rem 0.8rem; line-height: 1.35; }
   .rn { width: 30px; height: 30px; border-radius: 50%; background: #1c2a5a; color: #fff; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; font-size: 0.95rem; }
   .rt { font-size: 1.08rem; font-weight: 700; color: #14213a; line-height: 1.35; }
   .rx { font-size: 0.95rem; line-height: 1.6; color: #3a4558; }
@@ -134,9 +138,15 @@ const dots4 = [
   .axl-left { font-size: 11px; font-weight: 600; fill: #7d8798; }
   .axis-arrow { stroke: #7d8798; stroke-width: 1.5; }
   .thr { stroke: #c0392b; stroke-width: 1; stroke-dasharray: 4 3; opacity: 0.7; }
-  .thr-l { font-size: 10.5px; fill: #c0392b; text-anchor: end; }
-  .dot4 { fill: #2453c4; fill-opacity: 0.85; stroke: #fff; stroke-width: 1.2; }
-  .dot4.st { fill: #9aa3b2; }
+  .dot4 { fill: #2453c4; fill-opacity: 0.9; stroke: #fff; stroke-width: 1.2; }
+  .dot4.st { fill: #8a94a6; }
+  .bg-trans { fill: #edf2fd; }
+  .bg-stat { fill: #f2f3f6; }
+  .grp { font-size: 12px; font-weight: 700; text-anchor: middle; }
+  .grp.trans { fill: #2453c4; }
+  .grp.stat { fill: #6b7486; }
+  .thr-t { fill: #c0392b; }
+  .ytitle { font-size: 11px; font-weight: 600; fill: #7d8798; text-anchor: middle; }
   .b-row { font-size: 11px; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; fill: #7d8798; }
   .bx { stroke-width: 1.2; }
   .bx.tmp { fill: #e7f5ef; stroke: #0f8a6a; }

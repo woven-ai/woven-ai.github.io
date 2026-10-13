@@ -1,6 +1,6 @@
 ---
 // Primitive.astro: RQ3 — a primitive, or a collection of task-specific effects?
-import { WOVEN_TRAIN, WOVEN_TRAIN_COLS, TRAINED_COL, ACTION_NAMES, subsetName } from '../data/woven';
+import { WOVEN_TRAIN, WOVEN_TRAIN_COLS, TRAINED_COL, ACTION_NAMES, DOSE, subsetName } from '../data/woven';
 const colNames = WOVEN_TRAIN_COLS.map((c) => ({ Exo: ACTION_NAMES.exo, Perc: ACTION_NAMES.perc, Insp: ACTION_NAMES.insp, Navi: ACTION_NAMES.navi, Mani: ACTION_NAMES.mani } as Record<string, string>)[c]);
 const MAXV = 65;
 const cellBg = (x: number) => {
@@ -15,6 +15,21 @@ const SRC = ['Camera motion', 'Manipulation', 'Passive physics'];
 const DST = ['Spatial', 'Embodied', 'Physical'];
 const BW = 132, BH = 40, YS = [52, 116, 180];
 const PW = 112, PH = 92, PX = 164, PY = 102;
+
+// Dose-response scatter: WOVEN gain after SFT against the mean external gain, one dot per subset.
+const SW = 520, SH = 300, SL = 62, SR = 16, ST = 14, SB = 50;
+const XMAX = 26, YMAX = 3.5;
+const sx = (x: number) => SL + (x / XMAX) * (SW - SL - SR);
+const sy = (y: number) => SH - SB - (y / YMAX) * (SH - SB - ST);
+const xs = DOSE.map((d) => d.w), ys = DOSE.map((d) => d.e);
+const mean = (a: number[]) => a.reduce((s, v) => s + v, 0) / a.length;
+const mx = mean(xs), my = mean(ys);
+const sxy = xs.reduce((s, x, i) => s + (x - mx) * (ys[i] - my), 0);
+const sxx = xs.reduce((s, x) => s + (x - mx) ** 2, 0);
+const syy = ys.reduce((s, y) => s + (y - my) ** 2, 0);
+const slope = sxy / sxx, icpt = my - slope * mx;
+const r = sxy / Math.sqrt(sxx * syy);
+const FX0 = 4, FX1 = 25.5;
 ---
 
 <details class="rq" id="primitive" open>
@@ -22,8 +37,6 @@ const PW = 112, PH = 92, PX = 164, PY = 102;
     <span class="rq-tag">RQ3</span>
     <span class="rq-q">A primitive, or just a collection of task-specific effects?</span>
     <span class="rq-a">A primitive — different sources of supervision build the same capability, and broad downstream gains result from it (r = 0.86 across the 11 subsets).</span>
-  </summary>
-  <div class="rq-body">
     <div class="schema">
       <figure class="schema-panel">
         <svg viewBox="0 0 440 236" role="img" aria-label="Task-specific effects: each supervision source improves only its own domain">
@@ -65,39 +78,71 @@ const PW = 112, PH = 92, PX = 164, PY = 102;
         <figcaption class="verdict yes"><span class="mark">✓</span>A shared primitive</figcaption>
       </figure>
     </div>
-    <p class="rq-note">Two explanations of the downstream gains; the evidence below supports the one on the right.</p>
-    <div class="table-scroll" role="region" aria-label="WOVEN gains by training subset and action type" tabindex="0">
-      <table class="heat">
-        <thead>
-          <tr>
-            <th class="rowhead">Training subset</th>
-            {colNames.map((c) => <th>{c}</th>)}
-            <th class="sep">Temporal adjacency</th>
-          </tr>
-        </thead>
-        <tbody>
-          {WOVEN_TRAIN.map((r) => (
+  </summary>
+  <div class="rq-body">
+    <section class="ev">
+      <div class="ev-head"><span class="ev-n">a</span><h3 class="ev-t">Different sources improve the same capability</h3></div>
+      <p class="ev-x">Every subset improves WOVEN accuracy, including on the action types it does not train on.</p>
+      <div class="table-scroll" role="region" aria-label="WOVEN gains by training subset and action type" tabindex="0">
+        <table class="heat">
+          <thead>
+            <tr><th></th><th colspan={colNames.length} class="grp">Gain in WOVEN accuracy by action type (points)</th></tr>
             <tr>
-              <th class="rowhead">{subsetName(r.s)}</th>
-              {r.v.map((x, j) => (
-                <td class={TRAINED_COL[r.s.split('_')[0]] === j ? 'trained' : ''} style={`background:${cellBg(x)};color:${cellFg(x)}`}>{fmt(x)}</td>
-              ))}
-              <td class="sep" style={`background:${cellBg(r.adj)};color:${cellFg(r.adj)}`}>{fmt(r.adj)}</td>
+              <th class="rowhead">Training subset</th>
+              {colNames.map((c) => <th>{c}</th>)}
             </tr>
+          </thead>
+          <tbody>
+            {WOVEN_TRAIN.map((row) => (
+              <tr>
+                <th class="rowhead">{subsetName(row.s)}</th>
+                {row.v.map((x, j) => (
+                  <td class={TRAINED_COL[row.s.split('_')[0]] === j ? 'trained' : ''} style={`background:${cellBg(x)};color:${cellFg(x)}`}>{fmt(x)}</td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <p class="key-line"><span class="k-out"></span>the action type the subset trains on</p>
+    </section>
+
+    <section class="ev">
+      <div class="ev-head"><span class="ev-n">b</span><h3 class="ev-t">The downstream gains result from that capability</h3></div>
+      <p class="ev-x">Across the 11 subsets, the more a subset improves WOVEN accuracy, the larger its mean gain on the external benchmarks.</p>
+      <figure class="ev-fig dose">
+        <svg viewBox={`0 0 ${SW} ${SH}`} role="img" aria-label={`Mean external gain against WOVEN gain for the 11 subsets; r = ${r.toFixed(2)}`}>
+          {[0, 1, 2, 3].map((t) => (
+            <g>
+              <line x1={SL} x2={SW - SR} y1={sy(t)} y2={sy(t)} class="grid" />
+              <text x={SL - 8} y={sy(t) + 4} class="tick" text-anchor="end">{t}</text>
+            </g>
           ))}
-        </tbody>
-      </table>
-    </div>
-    <p class="rq-note">Each subset also improves the action types it does not train on: gain in WOVEN accuracy (points over the base model); outlined cells mark the action type the subset trains on.</p>
-      <figure class="wide-figure">
-        <a href="figures/substitution.png" target="_blank" rel="noopener" class="zoom-link" title="Open full-size image"><img src="figures/substitution.png" alt="Three panels (SAT, ActionEQA, CLEVRER) plotting accuracy against the share p of task-specific training data replaced by WOVEN items under a fixed 2,000-item budget. Accuracy stays near the p = 0 level up to 30 to 50 percent replacement and stays above the deletion control." width="2000" height="573" loading="lazy" /></a>
-        <figcaption>With the training budget fixed at 2,000 items, replacing 30–50% of a benchmark’s own training data with a WOVEN subset keeps accuracy comparable (blue: 3 seeds and their mean; orange dashed: deleting those items instead).</figcaption>
+          {[0, 5, 10, 15, 20, 25].map((t) => (<text x={sx(t)} y={SH - SB + 18} class="tick" text-anchor="middle">{t}</text>))}
+          <line x1={SL} x2={SW - SR} y1={sy(0)} y2={sy(0)} class="axis" />
+          <line x1={sx(FX0)} y1={sy(icpt + slope * FX0)} x2={sx(FX1)} y2={sy(icpt + slope * FX1)} class="fit" />
+          {DOSE.map((d) => (
+            <circle cx={sx(d.w)} cy={sy(d.e)} r="6.5" class="pt"><title>{`${subsetName(d.s)}: +${d.w.toFixed(1)} on WOVEN, +${d.e.toFixed(2)} external`}</title></circle>
+          ))}
+          <text x={sx(1)} y={sy(3.15)} class="r-lab">r = {r.toFixed(2)}</text>
+          <text x={(SL + SW - SR) / 2} y={SH - 8} class="ax-title" text-anchor="middle">Gain in WOVEN accuracy after SFT (points)</text>
+          <text transform={`translate(16 ${(ST + SH - SB) / 2}) rotate(-90)`} class="ax-title" text-anchor="middle">Mean external gain (points)</text>
+        </svg>
       </figure>
+    </section>
+
+    <section class="ev plus">
+      <div class="ev-head"><span class="ev-n">+</span><h3 class="ev-t">Further test of causality by intervention</h3></div>
+      <p class="ev-x">With the training budget fixed at 2,000 items, replacing 30–50% of a benchmark’s own training items with WOVEN items keeps accuracy comparable (blue), above simply deleting them (orange dashed).</p>
+      <figure class="ev-fig">
+        <a href="figures/substitution.png" target="_blank" rel="noopener" class="zoom-link" title="Open full-size image"><img src="figures/substitution.png" alt="Three panels (SAT, ActionEQA, CLEVRER) plotting accuracy against the share p of task-specific training data replaced by WOVEN items under a fixed 2,000-item budget. Accuracy stays near the p = 0 level up to 30 to 50 percent replacement and stays above the deletion control." width="2000" height="573" loading="lazy" /></a>
+      </figure>
+    </section>
   </div>
 </details>
 
 <style>
-  .schema { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.2rem; }
+  .schema { grid-column: 1 / -1; grid-row: 3; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.2rem; margin-top: 0.8rem; }
   .schema-panel { margin: 0; background: #f7f9fd; border: 1px solid #e3e8f1; border-radius: 12px; padding: 0.6rem 0.6rem 0.8rem; }
   .schema-panel svg { width: 100%; height: auto; display: block; }
   .col-h { font-size: 11px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; fill: #7d8798; }
@@ -116,11 +161,31 @@ const PW = 112, PH = 92, PX = 164, PY = 102;
   .verdict.yes { color: #1f7a4d; }
   @media (max-width: 760px) { .schema { grid-template-columns: 1fr; } }
 
-  .heat { border-collapse: separate; border-spacing: 3px; margin: 1.2rem auto 0; font-variant-numeric: tabular-nums; }
+  .ev { display: flex; flex-direction: column; gap: 0.6rem; padding: 1.4rem 0; border-bottom: 1px solid #eef1f6; }
+  .ev:last-child { border-bottom: 0; padding-bottom: 0.4rem; }
+  .ev-head { display: flex; align-items: center; gap: 0.6rem; }
+  .ev-n { flex: none; width: 30px; height: 30px; border-radius: 50%; background: #1c2a5a; color: #fff; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; font-size: 0.95rem; }
+  .ev.plus .ev-n { background: #fff; color: #1c2a5a; border: 2px solid #1c2a5a; font-size: 1.1rem; }
+  .ev-t { margin: 0; font-size: 1.08rem; font-weight: 700; color: #14213a; line-height: 1.35; }
+  .ev-x { margin: 0; font-size: 0.95rem; line-height: 1.6; color: #3a4558; max-width: 760px; }
+  .ev-fig { margin: 0.3rem 0 0; }
+  .ev-fig img { width: 100%; height: auto; border-radius: 8px; border: 1px solid #eef1f6; }
+  .ev-fig.dose { max-width: 560px; align-self: center; width: 100%; }
+  .ev-fig svg { width: 100%; height: auto; display: block; overflow: visible; }
+  .grid { stroke: #eef1f6; stroke-width: 1; }
+  .axis { stroke: #9aa3b2; stroke-width: 1; }
+  .tick { font-size: 12px; fill: #6b7486; }
+  .ax-title { font-size: 12.5px; font-weight: 600; fill: #4a5263; }
+  .fit { stroke: #9db4ea; stroke-width: 2; stroke-dasharray: 5 4; }
+  .pt { fill: #2453c4; stroke: #fff; stroke-width: 1.5; }
+  .r-lab { font-size: 17px; font-weight: 700; fill: #2453c4; }
+
+  .heat { border-collapse: separate; border-spacing: 3px; margin: 0.2rem auto 0; font-variant-numeric: tabular-nums; }
   .heat th { font-size: 0.82rem; font-weight: 600; color: #334; padding: 0.35rem 0.5rem; text-align: center; vertical-align: bottom; }
+  .heat th.grp { font-size: 0.78rem; font-weight: 600; color: #6b7486; border-bottom: 1px solid #e3e8f1; padding-bottom: 0.3rem; }
   .heat th.rowhead { text-align: right; white-space: nowrap; font-weight: 500; color: #222; }
   .heat td { min-width: 78px; text-align: center; font-size: 0.88rem; padding: 0.45rem 0.4rem; border-radius: 6px; }
   .heat td.trained { outline: 2.5px solid #0f1f4d; outline-offset: -2.5px; font-weight: 700; }
-  .heat .sep { border-left: 0; }
-  .heat th.sep { padding-left: 1rem; }
+  .key-line { margin: 0.1rem 0 0; text-align: center; font-size: 0.82rem; color: #556; display: flex; align-items: center; justify-content: center; gap: 0.4rem; }
+  .k-out { display: inline-block; width: 16px; height: 12px; border: 2.5px solid #0f1f4d; border-radius: 3px; background: rgba(36, 83, 196, 0.35); }
 </style>
