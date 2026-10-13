@@ -43,7 +43,7 @@ const DSB = [
 <details class="rq" id="primitive" open>
   <summary>
     <span class="rq-tag">RQ3</span>
-    <span class="rq-q">A primitive, or just a collection of task-specific effects?</span>
+    <span class="rq-q">Is visual world modeling a primitive, or just a collection of task-specific effects?</span>
     <span class="rq-a">A primitive — different sources of supervision build the same capability, and broad downstream gains result from it.</span>
     <div class="schema">
       <figure class="schema-panel">
@@ -65,7 +65,7 @@ const DSB = [
         <figcaption class="verdict no"><span class="mark">✕</span>A collection of task-specific effects</figcaption>
       </figure>
       <figure class="schema-panel">
-        <svg viewBox="0 0 440 236" role="img" aria-label="A shared primitive: every supervision source builds visual transition reasoning, which helps every domain">
+        <svg viewBox="0 0 440 236" role="img" aria-label="A shared primitive: every supervision source builds visual world modeling, which helps every domain">
           <defs><marker id="ah-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#2453c4" /></marker></defs>
           <text x="6" y="26" class="col-h" text-anchor="start">Supervision sources</text>
           <text x="434" y="26" class="col-h" text-anchor="end">Downstream domains</text>
@@ -82,8 +82,8 @@ const DSB = [
           ))}
           <rect x={PX} y={PY} width={PW} height={PH} rx="14" class="prim" />
           <text x={PX + PW / 2} y={PY + 32} class="prim-t">Visual</text>
-          <text x={PX + PW / 2} y={PY + 51} class="prim-t">transition</text>
-          <text x={PX + PW / 2} y={PY + 70} class="prim-t">reasoning</text>
+          <text x={PX + PW / 2} y={PY + 51} class="prim-t">world</text>
+          <text x={PX + PW / 2} y={PY + 70} class="prim-t">modeling</text>
         </svg>
         <figcaption class="verdict yes"><span class="mark">✓</span>A shared primitive</figcaption>
       </figure>
@@ -127,7 +127,7 @@ const DSB = [
           <p class="r-right">The model learns the transition itself<span class="ok"> ✓</span><span class="inst">, instead of separate skills for each question</span></p>
         </div>
         <div class="item">
-          <h4 class="it"><span class="it-n">A.3</span>The gains come from real transition reasoning<span class="ok"> ✓</span><span class="inst">, instead of a shortcut</span></h4>
+          <h4 class="it"><span class="it-n">A.3</span>The gains come from real visual world modeling<span class="ok"> ✓</span><span class="inst">, instead of a shortcut</span></h4>
           <p class="it-more">See details in <a href="https://arxiv.org/abs/2610.12417" target="_blank" rel="noopener">our paper</a>.</p>
         </div>
       </div>
