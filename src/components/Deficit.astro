@@ -33,6 +33,7 @@ const bx = (i: number) => VL + slot * i + (slot - barW) / 2;
   <div class="rq-body">
     <div class="dual">
       <figure class="dfig">
+        <h4 class="dtitle">Large deficit</h4>
         <svg viewBox={`0 0 ${VW} ${VH}`} role="img" aria-label="In-distribution accuracy of the four strongest models, with the human and chance levels">
           {[0, 25, 50, 75, 100].map((t) => (
             <g>
@@ -60,6 +61,7 @@ const bx = (i: number) => VL + slot * i + (slot - barW) / 2;
         <figcaption>The four strongest of 38 frontier MLLMs.</figcaption>
       </figure>
       <figure class="dfig">
+        <h4 class="dtitle">Pattern shared across model families</h4>
         <a href="figures/assess.png" target="_blank" rel="noopener" class="zoom-link" title="Open full-size image"><img src="figures/assess.png" alt="Accuracy of eight frontier MLLMs and humans by action type, reasoning type, and state perturbation. All eight models dip at the same places: temporal adjacency near chance, counterfactual removal below substitution, and geometric below appearance perturbation." width="1680" height="1440" loading="lazy" /></a>
         <figcaption>Eight frontier MLLMs by action type, reasoning type, and state perturbation.</figcaption>
       </figure>
@@ -89,11 +91,12 @@ const bx = (i: number) => VL + slot * i + (slot - barW) / 2;
 </details>
 
 <style>
-  .dual { display: grid; grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr); gap: 1.6rem; align-items: end; }
-  .dfig { margin: 0; }
+  .dual { display: grid; grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr); gap: 1.6rem; }
+  .dfig { margin: 0; display: flex; flex-direction: column; }
+  .dtitle { margin: 0 0 0.6rem; text-align: center; font-size: 1.05rem; font-weight: 700; color: #14213a; }
   .dfig svg { width: 100%; height: auto; display: block; overflow: visible; }
   .dfig img { width: 100%; height: auto; display: block; }
-  .dfig figcaption { margin-top: 0.5rem; text-align: center; font-size: 0.85rem; line-height: 1.5; color: #556; }
+  .dfig figcaption { margin-top: auto; padding-top: 0.5rem; text-align: center; font-size: 0.85rem; line-height: 1.5; color: #556; }
   .vgrid { stroke: #eef1f6; stroke-width: 1; }
   .vtick { font-size: 14px; fill: #6b7486; }
   .vtitle { font-size: 14.5px; font-weight: 600; fill: #4a5263; }
