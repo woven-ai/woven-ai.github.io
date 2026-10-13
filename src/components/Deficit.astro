@@ -1,4 +1,5 @@
 ---
+// Deficit.astro: RQ1 — do current MLLMs show a deficit?
 import { DEFICIT_COLS, DEFICIT_ROWS } from '../data/woven';
 const groups = [
   { label: '', span: 2 },
@@ -16,14 +17,13 @@ const human = DEFICIT_ROWS.find((r) => r.model === 'Human');
 const models = DEFICIT_ROWS.filter((r) => r.model !== 'Human');
 const tableRows = [...models, ...(human ? [human] : [])];
 ---
-<section id="deficit" class="content-section">
-  <div class="section-container narrow">
-    <span class="section-tag">1 · Deficit</span>
-    <h2 class="section-title left">Current MLLMs show a substantial and systematic deficit</h2>
-    <p class="lead">
-      We evaluate 38 frontier MLLMs. The strongest, GPT-5.4, reaches 65.8% in-distribution accuracy, while human annotators reach {human?.v[0].toFixed(1)}%.
-      The failures recur across model families and persist with scale.
-    </p>
+<details class="rq" id="deficit">
+  <summary>
+    <span class="rq-tag">RQ1</span>
+    <span class="rq-q">Do current MLLMs show a deficit?</span>
+    <span class="rq-a">Yes — the strongest of 38 frontier MLLMs reaches 65.8%, and the failures recur across model families and scales.</span>
+  </summary>
+  <div class="rq-body">
     <div class="acc-bars" role="list" aria-label="In-distribution accuracy of the four strongest models">
       {models.map((r) => (
         <div class="arow" role="listitem">
@@ -32,22 +32,15 @@ const tableRows = [...models, ...(human ? [human] : [])];
         </div>
       ))}
     </div>
-    <p class="table-note">In-distribution accuracy (%) of the four strongest of the 38 models; chance is 25%.</p>
-  </div>
+    <p class="rq-note">In-distribution accuracy (%) of the four strongest models; chance is 25%, human annotators reach {human?.v[0].toFixed(1)}%. Results for all 38 models are in the paper.</p>
 
-  <div class="section-container">
     <details class="more">
       <summary>Accuracy by action type, reasoning type, and state perturbation</summary>
       <div class="table-scroll" role="region" aria-label="Accuracy by category" tabindex="0">
         <table class="data-table">
           <thead>
-            <tr>
-              {groups.map((g) => <th colspan={g.span} class="group">{g.label}</th>)}
-            </tr>
-            <tr>
-              <th class="rowhead">Accuracy (%)</th>
-              {DEFICIT_COLS.map((c) => <th title={colTitles[c] ?? c}>{c}</th>)}
-            </tr>
+            <tr>{groups.map((g) => <th colspan={g.span} class="group">{g.label}</th>)}</tr>
+            <tr><th class="rowhead">Accuracy (%)</th>{DEFICIT_COLS.map((c) => <th title={colTitles[c] ?? c}>{c}</th>)}</tr>
           </thead>
           <tbody>
             {tableRows.map((r) => (
@@ -59,17 +52,13 @@ const tableRows = [...models, ...(human ? [human] : [])];
           </tbody>
         </table>
       </div>
-      <p class="table-note">
-        Exo: passive physical events; Perc: camera motion; Insp: object inspection; Navi: navigation; Mani: object manipulation;
-        Fwd/Inv: forward/inverse dynamics; Rmv/Sub: counterfactual removal/substitution; Otm/Cue: outcome/cued prediction; Ord/Adj: temporal ordering/adjacency;
-        Geo/App: geometric/appearance perturbation. Results for all 38 models are in the paper.
-      </p>
+      <p class="rq-note">Hover a column header for its full name.</p>
     </details>
   </div>
-</section>
+</details>
 
 <style>
-  .acc-bars { display: flex; flex-direction: column; gap: 8px; margin: 1.4rem 0 0.2rem; }
+  .acc-bars { display: flex; flex-direction: column; gap: 8px; max-width: 760px; }
   .arow { display: grid; grid-template-columns: 150px minmax(0, 1fr); align-items: center; gap: 0.8rem; }
   .aname { text-align: right; font-size: 0.92rem; color: #222; }
   .atrack { position: relative; height: 24px; background: #f2f4f8; border-radius: 4px; }

@@ -19,10 +19,27 @@ const pageTitle = "WOVEN: Weaving Visual World Modeling into Multimodal LLMs";
 <Layout title={pageTitle}>
   <Hero />
   <Transition />
-  <Deficit />
-  <Transfer />
-  <Primitive />
-  <Recipe />
+  <section id="findings" class="content-section">
+    <div class="section-container">
+      <h2 class="section-title">Findings</h2>
+      <p class="findings-sub">Click each question to expand the evidence.</p>
+      <div class="rq-list">
+        <Deficit />
+        <Transfer />
+        <Primitive />
+        <Recipe />
+      </div>
+    </div>
+  </section>
   <Resources />
   <AuthorsCitation />
+  <script>
+    // Open the question card a link points to (for example, the headline numbers in the hero).
+    const openTarget = () => {
+      const el = location.hash ? document.getElementById(location.hash.slice(1)) : null;
+      if (el && el.tagName === 'DETAILS') { (el as HTMLDetailsElement).open = true; el.scrollIntoView({ block: 'start' }); }
+    };
+    window.addEventListener('hashchange', openTarget);
+    openTarget();
+  </script>
 </Layout>

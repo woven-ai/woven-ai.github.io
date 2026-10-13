@@ -1,59 +1,50 @@
 ---
-import { FAMILIES, SPLITS } from '../data/woven';
+// Transition.astro: the Method section — capability, data, and training subsets.
+import { FAMILIES } from '../data/woven';
 ---
-<section id="transition" class="content-section">
-  <div class="section-container narrow">
-    <span class="section-tag">The capability</span>
-    <h2 class="section-title left">Visual transition reasoning: inferring the missing part of (s, a, s′)</h2>
-    <p class="lead">
-      Given the visual states s and s′ of a scene before and after an action a, <strong>visual transition reasoning</strong> infers the unobserved part of the transition from its observed parts.
-      WOVEN generates rollouts with a video generation model (Wan2.2-I2V-A14B), several from the same initial state, and turns them into four-option questions labeled by scene, action type, and reasoning type, with each wrong option labeled by its error type.
-    </p>
-  </div>
-
+<section id="method" class="content-section">
   <div class="section-container">
-    <figure class="wide-figure">
-      <a href="figures/taxonomy.jpg" target="_blank" rel="noopener" class="zoom-link" title="Open full-size image"><img src="figures/taxonomy.jpg" alt="The WOVEN taxonomy. Left: the passive physical event type with its eight principles and the four agent-driven action types. Middle: the eight reasoning types in four families, each marking which element of (s, a, s′) the question asks for. Right: example scenes; restaurant and beach are held out." width="2000" height="1051" loading="lazy" /></a>
-      <figcaption>5 action types (left), 8 reasoning types in four families (middle), and 20 scene types (right; restaurant and beach are held out).</figcaption>
-    </figure>
-    <p class="split-line">
-      <strong>36,076 items</strong>
-      {SPLITS.map((s) => (<span><span class="dot" aria-hidden="true">·</span>{s.n} {s.label.toLowerCase()}</span>))}
-    </p>
+    <h2 class="section-title">Method</h2>
 
-    <details class="more">
-      <summary>The eight reasoning types</summary>
-      <div class="ops-grid">
+    <div class="m-card">
+      <div class="m-head"><span class="pill">Capability</span><h3>Visual transition reasoning</h3></div>
+      <p class="m-text">Infer the unobserved part of a transition (s, a, s′) from its observed parts. Eight reasoning types in four families:</p>
+      <div class="fam-grid">
         {FAMILIES.map((f) => (
-          <div class="family" style={`--fam:${f.color}`}>
-            <div class="family-name">{f.name}</div>
+          <div class="fam" style={`--fam:${f.color}`}>
+            <div class="fam-name">{f.name}</div>
             {f.ops.map((o) => (
-              <div class="op">
-                <div class="op-name">{o.name}</div>
-                <div class="op-dist" set:html={o.dist} />
-                <div class="op-asks">{o.asks}</div>
-              </div>
+              <div class="fam-op"><span class="op-n">{o.name}</span><span class="op-d" set:html={o.dist} /></div>
             ))}
           </div>
         ))}
       </div>
-      <p class="table-note">a<sub>alt</sub>: an alternative action from the same initial state; a<sub>exo</sub>: a passive event; a<sub>q</sub>: a passive event with a cue naming the physical principle; <b>s</b>: states in time order; <b>s̃</b>: the same states shuffled.</p>
-    </details>
+    </div>
+
+    <div class="m-card">
+      <div class="m-head"><span class="pill">Data</span><h3>Controlled transitions from a video generation model</h3></div>
+      <p class="m-text">Rollouts of Wan2.2-I2V-A14B, several from the same initial state, become four-option questions; every wrong option is labeled with its error type.</p>
+      <figure class="m-figure">
+        <a href="figures/taxonomy.jpg" target="_blank" rel="noopener" class="zoom-link" title="Open full-size image"><img src="figures/taxonomy.jpg" alt="The WOVEN taxonomy. Left: the passive physical event type with its eight principles and the four agent-driven action types. Middle: the eight reasoning types in four families, each marking which element of (s, a, s′) the question asks for. Right: example scenes; restaurant and beach are held out." width="2000" height="1051" loading="lazy" /></a>
+      </figure>
+      <div class="chips"><span>36,076 items</span><span>20 scene types</span><span>5 action types</span><span>8 reasoning types</span></div>
+    </div>
+
+    <div class="m-card">
+      <div class="m-head"><span class="pill">Training</span><h3>Controlled subsets</h3></div>
+      <p class="m-text">11 subsets of about 2,000 items, each pairing one action type with one reasoning family, train Qwen2.5-VL-3B-Instruct with SFT, then GRPO.</p>
+    </div>
   </div>
 </section>
 
 <style>
-  .split-line { margin: 1rem auto 0; max-width: 1000px; text-align: center; font-size: 0.95rem !important; color: #445 !important; font-variant-numeric: tabular-nums; }
-  .split-line strong { color: #14213a; }
-  .split-line .dot { margin: 0 0.5rem; color: #9aa3b2; }
-  .ops-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1.2rem; margin-top: 1rem; }
-  .family { border-top: 3px solid var(--fam); padding-top: 0.6rem; display: flex; flex-direction: column; gap: 0.7rem; }
-  .family-name { font-size: 0.78rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; color: var(--fam); }
-  .op { display: flex; flex-direction: column; gap: 0.2rem; }
-  .op-name { font-weight: 600; color: #1c2a3a; }
-  .op-dist { font-family: 'Times New Roman', Times, serif; font-style: italic; font-size: 1.02rem; color: #333; }
-  .op-dist :global(b) { font-style: normal; font-weight: 700; }
-  .op-asks { font-size: 0.9rem; line-height: 1.5; color: #444; }
-  @media (max-width: 900px) { .ops-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-  @media (max-width: 520px) { .ops-grid { grid-template-columns: 1fr; } }
+  .fam-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0.8rem; margin-top: 0.9rem; }
+  .fam { border-radius: 10px; background: #f7f8fb; border-top: 3px solid var(--fam); padding: 0.7rem 0.8rem; display: flex; flex-direction: column; gap: 0.45rem; }
+  .fam-name { font-size: 0.74rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; color: var(--fam); }
+  .fam-op { display: flex; flex-direction: column; gap: 0.1rem; }
+  .op-n { font-size: 0.9rem; font-weight: 600; color: #1c2a3a; }
+  .op-d { font-family: 'Times New Roman', Times, serif; font-style: italic; font-size: 0.98rem; color: #333; }
+  .op-d :global(b) { font-style: normal; font-weight: 700; }
+  @media (max-width: 900px) { .fam-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  @media (max-width: 480px) { .fam-grid { grid-template-columns: 1fr; } }
 </style>

@@ -135,3 +135,38 @@ export const PROSPECTIVE = [
   { comp: 'Exogenous-heavy', item: '(3)', set: 'Agent-action questions', d: 4.7, lo: 3.19, hi: 6.17, p: '0.0002' },
   { comp: 'Exogenous-heavy', item: '(3)', set: 'Passive-physics questions', d: -0.5, lo: -1.05, hi: -0.02, p: '0.04' },
 ];
+
+// Transfer by domain: Qwen2.5-VL-3B-Instruct before training (base) and after training on the best
+// controlled subset for that benchmark (best = larger of SFT and GRPO); d = the paper's gain row.
+export const DOMAINS = [
+  { key: 'spatial', name: 'Spatial', items: [
+    { b: 'SAT', base: 37.3, best: 64.7, d: 27.3 },
+    { b: 'DSI-Bench', base: 34.9, best: 40.9, d: 6.0 },
+    { b: 'MindCube', base: 37.2, best: 43.1, d: 5.9 },
+    { b: 'SpatialViz', base: 27.7, best: 32.2, d: 4.5 },
+    { b: 'ViewSpatial', base: 35.3, best: 39.6, d: 4.3 },
+    { b: 'CV-Bench', base: 69.3, best: 72.9, d: 3.5 },
+    { b: 'BLINK', base: 46.2, best: 49.5, d: 3.3 },
+  ] },
+  { key: 'embodied', name: 'Embodied', items: [
+    { b: 'ActionEQA', base: 43.4, best: 55.9, d: 12.5 },
+    { b: 'Robo2VLM', base: 33.5, best: 42.4, d: 8.9 },
+    { b: 'WorldPrediction', base: 34.8, best: 42.9, d: 8.1 },
+    { b: 'ERQA', base: 33.8, best: 38.3, d: 4.5 },
+    { b: 'PaiBench', base: 48.3, best: 51.8, d: 3.5 },
+    { b: 'Cosmos', base: 76.7, best: 80.0, d: 3.3 },
+  ] },
+  { key: 'physical', name: 'Physical', items: [
+    { b: 'InPhyRe', base: 22.0, best: 32.6, d: 10.6 },
+    { b: 'CLEVRER', base: 58.2, best: 63.3, d: 5.1 },
+    { b: 'WM-ABench', base: 31.0, best: 35.6, d: 4.6 },
+    { b: 'MVP', base: 24.4, best: 29.0, d: 4.5 },
+    { b: 'BlackSwan', base: 61.8, best: 64.3, d: 2.5 },
+  ] },
+  { key: 'temporal', name: 'Temporal', items: [
+    { b: 'TemporalBench-L', base: 16.6, best: 28.2, d: 11.7 },
+    { b: 'TOMATO', base: 31.6, best: 34.7, d: 3.1 },
+    { b: 'TVBench', base: 36.5, best: 39.4, d: 2.8 },
+    { b: 'TempCompass', base: 67.7, best: 70.2, d: 2.4 },
+  ] },
+];

@@ -1,4 +1,5 @@
 ---
+// Primitive.astro: RQ3 — do the gains come from one shared capability?
 import { WOVEN_TRAIN, WOVEN_TRAIN_COLS, TRAINED_COL, ACTION_NAMES, subsetName } from '../data/woven';
 const colNames = WOVEN_TRAIN_COLS.map((c) => ({ Exo: ACTION_NAMES.exo, Perc: ACTION_NAMES.perc, Insp: ACTION_NAMES.insp, Navi: ACTION_NAMES.navi, Mani: ACTION_NAMES.mani } as Record<string, string>)[c]);
 const MAXV = 65;
@@ -9,17 +10,14 @@ const cellBg = (x: number) => {
 const cellFg = (x: number) => (x >= 0 && x / MAXV > 0.45 ? '#fff' : '#1c2a3a');
 const fmt = (x: number) => `${x > 0 ? '+' : x < 0 ? '−' : ''}${Math.abs(x).toFixed(1)}`;
 ---
-<section id="primitive" class="content-section">
-  <div class="section-container narrow">
-    <span class="section-tag">3 · Shared primitive</span>
-    <h2 class="section-title left">Visual transition reasoning serves as a shared training primitive</h2>
-    <p class="lead">
-      Each subset raises WOVEN accuracy on action types it does not train on (43 of the 44 such cells below), and the more a subset improves WOVEN accuracy, the larger its average gain on the external benchmarks
-      (<strong>r = 0.86</strong> across the 11 subsets). WOVEN data can replace <strong>30–50%</strong> of a task’s own training data with comparable accuracy.
-    </p>
-  </div>
 
-  <div class="section-container">
+<details class="rq" id="primitive">
+  <summary>
+    <span class="rq-tag">RQ3</span>
+    <span class="rq-q">Do the gains come from one shared capability?</span>
+    <span class="rq-a">Yes — subsets also improve action types they do not train on (43 of 44 cases), and larger WOVEN gains bring larger downstream gains (r = 0.86 across the 11 subsets).</span>
+  </summary>
+  <div class="rq-body">
     <div class="table-scroll" role="region" aria-label="WOVEN gains by training subset and action type" tabindex="0">
       <table class="heat">
         <thead>
@@ -42,20 +40,13 @@ const fmt = (x: number) => `${x > 0 ? '+' : x < 0 ? '−' : ''}${Math.abs(x).toF
         </tbody>
       </table>
     </div>
-    <p class="table-note">Gain in WOVEN accuracy (points over the base model) after training on each subset; outlined cells mark the action type the subset trains on.</p>
-  </div>
-
-  <div class="section-container">
-    <details class="more">
-      <summary>Substituting WOVEN for in-domain training data</summary>
+    <p class="rq-note">Gain in WOVEN accuracy (points over the base model) after training on each subset; outlined cells mark the action type the subset trains on.</p>
       <figure class="wide-figure">
         <a href="figures/substitution.png" target="_blank" rel="noopener" class="zoom-link" title="Open full-size image"><img src="figures/substitution.png" alt="Three panels (SAT, ActionEQA, CLEVRER) plotting accuracy against the share p of task-specific training data replaced by WOVEN items under a fixed 2,000-item budget. Accuracy stays near the p = 0 level up to 30 to 50 percent replacement and stays above the deletion control." width="2000" height="573" loading="lazy" /></a>
-        <figcaption>With the training budget fixed at 2,000 items, a share p of each benchmark’s own training data is replaced by a WOVEN subset (blue: 3 seeds and their mean; orange dashed: deleting those items instead).</figcaption>
+        <figcaption>With the training budget fixed at 2,000 items, replacing 30–50% of a benchmark’s own training data with a WOVEN subset keeps accuracy comparable (blue: 3 seeds and their mean; orange dashed: deleting those items instead).</figcaption>
       </figure>
-      <p class="table-note">The same WOVEN format with permuted or mirrored transitions does not reproduce the downstream gains.</p>
-    </details>
   </div>
-</section>
+</details>
 
 <style>
   .heat { border-collapse: separate; border-spacing: 3px; margin: 1.2rem auto 0; font-variant-numeric: tabular-nums; }

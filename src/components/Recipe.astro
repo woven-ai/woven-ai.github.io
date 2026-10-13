@@ -1,4 +1,5 @@
 ---
+// Recipe.astro: RQ4 — what should guide the training recipe?
 import { ROBUSTNESS, PROSPECTIVE, ACTION_NAMES } from '../data/woven';
 const recipe = [
   { n: '1', title: 'Select supervision by reasoning operation', text: 'To improve a downstream task, select supervision that teaches the reasoning operation the task requires, not supervision that matches its actions, scenes, or domains.' },
@@ -11,15 +12,14 @@ const fMin = -1.5, fMax = 6.5;
 const fx = (x: number) => ((x - fMin) / (fMax - fMin)) * 100;
 const fmt = (x: number, d = 1) => `${x > 0 ? '+' : x < 0 ? '−' : ''}${Math.abs(x).toFixed(d)}`;
 ---
-<section id="recipe" class="content-section">
-  <div class="section-container narrow">
-    <span class="section-tag">4 · Recipe</span>
-    <h2 class="section-title left">A training recipe for visual world modeling</h2>
-    <p class="lead">
-      Controlled comparisons of the subsets yield four rules. Tested prospectively on held-out benchmarks, <strong>all five comparisons come out as the recipe predicts</strong>.
-    </p>
-  </div>
-  <div class="section-container">
+
+<details class="rq" id="recipe">
+  <summary>
+    <span class="rq-tag">RQ4</span>
+    <span class="rq-q">What should guide the training recipe?</span>
+    <span class="rq-a">Select supervision by the reasoning operation it teaches, and prefer large state changes; all five prospective tests come out as predicted.</span>
+  </summary>
+  <div class="rq-body">
     <ol class="recipe-list">
       {recipe.map((r) => (
         <li>
@@ -29,7 +29,6 @@ const fmt = (x: number, d = 1) => `${x > 0 ? '+' : x < 0 ? '−' : ''}${Math.abs
         </li>
       ))}
     </ol>
-
     <figure class="forest" aria-labelledby="forest-cap">
       <div class="frow fhead" aria-hidden="true">
         <span class="fc">Comparison mixture</span><span class="fq">Questions</span>
@@ -53,20 +52,13 @@ const fmt = (x: number, d = 1) => `${x > 0 ? '+' : x < 0 ? '−' : ''}${Math.abs
       ))}
       <figcaption id="forest-cap">Accuracy of the mixture selected by the recipe minus each comparison mixture (points, mean over 8 seeds, 95% CI) on held-out benchmark questions.</figcaption>
     </figure>
-
     <details class="more">
-      <summary>Evidence for each rule</summary>
-      <h3 class="sub-title">(1) The reasoning operation decides where supervision transfers</h3>
-      <p>
-        After removing the component shared by all transfer profiles, subsets teaching the same reasoning family have similar residual profiles (mean pairwise correlation <strong>+0.32</strong>),
-        whereas subsets sharing only an action type are no more similar than subsets sharing neither (<strong>−0.22</strong> versus <strong>−0.23</strong>).
-      </p>
+      <summary>Evidence for rules 1 and 2</summary>
       <figure class="wide-figure">
         <a href="figures/grouping.png" target="_blank" rel="noopener" class="zoom-link" title="Open full-size image"><img src="figures/grouping.png" alt="Three correlation matrices of the 11 subsets' transfer profiles: raw profiles with all pairs positive; residual profiles ordered by action type with no block structure; residual profiles ordered by reasoning family with diagonal blocks." width="2400" height="673" loading="lazy" /></a>
         <figcaption>Correlation of the 11 subsets’ transfer profiles: raw (left), and residual ordered by action type (middle) or by reasoning family (right).</figcaption>
       </figure>
-
-      <h3 class="sub-title">(2) Larger state changes give more robustness</h3>
+      <p class="rq-note">Rule 2: gain on the state-perturbation test (points) after training on each subset.</p>
       <div class="robust" role="list">
         {ROBUSTNESS.map((r) => (
           <div class="rrow" role="listitem">
@@ -75,22 +67,9 @@ const fmt = (x: number, d = 1) => `${x > 0 ? '+' : x < 0 ? '−' : ''}${Math.abs
           </div>
         ))}
       </div>
-      <p class="table-note">Gain on the state-perturbation test set (points over the base model): the four causal-dynamics subsets, then the passive-physical-event subset.</p>
-
-      <h3 class="sub-title">(3, 4) Where transfer breaks</h3>
-      <p>
-        Temporal localization is learned only from temporal supervision: the four temporal subsets raise temporal-adjacency accuracy from 25.7% to 55.6–58.7%, while the other seven leave it near the baseline.
-        The passive-physical-event subset contains no agent action and lowers accuracy on WorldPrediction (−10.2) and ActionEQA (−1.7). The 4 benchmarks of static perception and general video QA do not improve under any training.
-      </p>
-
-      <h3 class="sub-title">Prospective test</h3>
-      <p>
-        Mixtures of WOVEN items are composed before any training and evaluated on questions from benchmarks that played no part in deriving the recipe (MMSI-Bench, VLM4D, PhysBench, SPAR-Bench, MVBench, IntPhys 2, and CameraBench).
-        The recipe mixture is compared with mixtures of the same size composed by matching the action (camera-heavy), by a different reasoning operation (temporal-heavy), by passive physical events (exogenous-heavy), or with no selection (uniform); each trains Qwen2.5-VL-3B-Instruct with 8 seeds.
-      </p>
     </details>
   </div>
-</section>
+</details>
 
 <style>
   .recipe-list { list-style: none; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1.4rem; margin: 1.4rem auto 0; max-width: 1100px; padding: 0; }

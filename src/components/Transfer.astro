@@ -1,90 +1,99 @@
 ---
-import { TRANSFER, FAMILIES, subsetName } from '../data/woven';
-const famColor: Record<string, string> = Object.fromEntries(FAMILIES.map((f) => [f.key, f.color]));
-const MIN = -2, MAX = 31;
-const pos = (x: number) => ((x - MIN) / (MAX - MIN)) * 100;
-const zero = pos(0);
-const firstStatic = TRANSFER.findIndex((r) => r.static);
-const thr = pos(2);
+// Transfer.astro: RQ2 — learnability and transfer, shown as one radar chart per domain.
+import { DOMAINS } from '../data/woven';
+
+const W = 440, H = 360, CX = 220, CY = 184, R = 122;
+// Radius encodes the gain over the base model: the base model is the inner ring (R0), and the
+// distance beyond it grows with the square root of the gain, on one scale shared by all four charts.
+const R0 = 0.4 * R;
+const DMAX = Math.max(...DOMAINS.flatMap((d) => d.items.map((it) => it.d)));
+const gr = (g: number) => R0 + (R - R0) * Math.sqrt(Math.max(g, 0) / DMAX);
+const ang = (i: number, n: number) => -Math.PI / 2 + (2 * Math.PI * i) / n;
+const at = (r: number, i: number, n: number) => { const a = ang(i, n); return [CX + r * Math.cos(a), CY + r * Math.sin(a)]; };
+const poly = (rs: number[]) => rs.map((r, i) => at(r, i, rs.length).map((x) => x.toFixed(1)).join(',')).join(' ');
+const ringGains = [5, 10, 20];
+// Interleave large and small gains around the circle so the shape reads as a whole.
+const interleave = <T,>(xs: T[]) => { const out: T[] = []; let lo = 0, hi = xs.length - 1; while (lo <= hi) { out.push(xs[lo++]); if (lo <= hi) out.push(xs[hi--]); } return out; };
+const label = (i: number, n: number) => {
+  const a = ang(i, n), r = R + 16;
+  const x = CX + r * Math.cos(a), y = CY + r * Math.sin(a);
+  const c = Math.cos(a), s = Math.sin(a);
+  const anchor = c > 0.3 ? 'start' : c < -0.3 ? 'end' : 'middle';
+  const dy = s < -0.6 ? -18 : s > 0.6 ? 6 : -6;
+  return { x, y: y + dy, anchor };
+};
+const charts = DOMAINS.map((d) => {
+  const items = interleave([...d.items].sort((a, b) => b.d - a.d));
+  const n = items.length;
+  return {
+    name: d.name,
+    n,
+    maxGain: Math.max(...items.map((it) => it.d)),
+    base: poly(Array(n).fill(R0)),
+    best: poly(items.map((it) => gr(it.d))),
+    ringPolys: ringGains.map((g) => ({ g, p: poly(Array(n).fill(gr(g))) })),
+    outer: poly(Array(n).fill(R)),
+    spokes: items.map((_, i) => at(R, i, n)),
+    dots: items.map((it, i) => at(gr(it.d), i, n)),
+    labels: items.map((it, i) => ({ ...label(i, n), b: it.b, d: it.d, base: it.base, best: it.best })),
+    ringLabel: (g: number) => { const a = -Math.PI / 2 - Math.PI / n, r = gr(g); return [CX + r * Math.cos(a), CY + r * Math.sin(a)]; },
+  };
+});
 ---
-<section id="transfer" class="content-section">
-  <div class="section-container narrow">
-    <span class="section-tag">2 · Transfer</span>
-    <h2 class="section-title left">Visual transition reasoning is learnable and transfers broadly</h2>
-    <p class="lead">
-      Fine-tuning Qwen2.5-VL-3B-Instruct on WOVEN raises in-distribution accuracy from 26.4% to <strong>89.3%</strong> (held-out scenes: 27.8% → 88.2%; state perturbation: 21.1% → 38.3%).
-      Evaluated zero-shot, controlled subsets of about 2,000 items each improve <strong>22 of 26</strong> external benchmarks, by up to <strong>27.3 points</strong>; the 4 benchmarks of static perception and general video QA do not improve.
+<details class="rq" id="transfer" open>
+  <summary>
+    <span class="rq-tag">RQ2</span>
+    <span class="rq-q">Can it be learned, and does it transfer?</span>
+    <span class="rq-a">Yes — subsets of about 2,000 items each improve 22 of 26 external benchmarks, spanning spatial, embodied, physical, and temporal reasoning.</span>
+  </summary>
+  <div class="rq-body">
+    <div class="radar-grid">
+      {charts.map((c) => (
+        <figure class="radar">
+          <figcaption class="radar-head"><span class="dname">{c.name}</span><span class="dmeta">{c.n} benchmarks · up to +{c.maxGain.toFixed(1)}</span></figcaption>
+          <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label={`${c.name}: accuracy before and after training on ${c.n} benchmarks`}>
+            <polygon points={c.outer} class="ring outer" />
+            {c.spokes.map(([x, y]) => (<line x1={CX} y1={CY} x2={x} y2={y} class="spoke" />))}
+            <polygon points={c.best} class="best" />
+            <polygon points={c.base} class="base" />
+            {c.dots.map(([x, y]) => (<circle cx={x} cy={y} r="3.2" class="dot" />))}
+            {c.labels.map((l) => (
+              <text x={l.x} y={l.y} text-anchor={l.anchor} class="ax-lab">
+                <title>{`${l.b}: ${l.base.toFixed(1)} → ${l.best.toFixed(1)}`}</title>
+                <tspan x={l.x} class="ax-name">{l.b}</tspan>
+                <tspan x={l.x} dy="15" class="ax-gain">+{l.d.toFixed(1)}</tspan>
+              </text>
+            ))}
+          </svg>
+        </figure>
+      ))}
+    </div>
+    <p class="rq-note">
+      Each axis is one external benchmark. <span class="key key-base"></span>Gray: Qwen2.5-VL-3B-Instruct. <span class="key key-best"></span>Blue: gain after training on the best controlled subset for that benchmark (larger of SFT and GRPO), in percentage points on a square-root scale; hover a label for the accuracies.
+      The four benchmarks of static perception and general video QA do not improve.
     </p>
   </div>
-
-  <div class="section-container">
-    <figure class="chart" aria-labelledby="transfer-cap">
-      <div class="legend">
-        {FAMILIES.map((f) => (<span class="lg"><i style={`background:${f.color}`}></i>{f.name} subset</span>))}
-        <span class="lg"><i style="background:#b8bfcc"></i>Static perception / general video QA</span>
-      </div>
-      <div class="bars" role="list">
-        <div class="axis-row" aria-hidden="true">
-          <span class="bname"></span>
-          <span class="track axis">
-            {[0, 5, 10, 15, 20, 25].map((t) => (<span class="tick" style={`left:${pos(t)}%`}>{t === 0 ? '0' : `+${t}`}</span>))}
-          </span>
-          <span class="bsub"></span>
-        </div>
-        {TRANSFER.map((r, i) => {
-          const fam = r.s.split('_')[1];
-          const left = r.d >= 0 ? zero : pos(r.d);
-          const width = Math.abs(pos(r.d) - zero);
-          return (
-            <div class={`bar-row${r.static ? ' is-static' : ''}${i === firstStatic ? ' first-static' : ''}`} role="listitem">
-              <span class="bname">{r.b}</span>
-              <span class="track">
-                <span class="zero" style={`left:${zero}%`}></span>
-                <span class="thr" style={`left:${thr}%`}></span>
-                <span class="bar" style={`left:${left}%;width:${width}%;background:${r.static ? '#b8bfcc' : famColor[fam]}`}></span>
-                <span class="val" style={`left:calc(${Math.max(pos(r.d), zero)}% + 6px)`}>{r.d > 0 ? '+' : r.d < 0 ? '−' : ''}{Math.abs(r.d).toFixed(1)}</span>
-              </span>
-              <span class="bsub">{subsetName(r.s)}</span>
-            </div>
-          );
-        })}
-      </div>
-      <figcaption id="transfer-cap">Gain over the base model (percentage points) with the best controlled subset for each benchmark, named on the right; the larger of the SFT and GRPO gains. Dashed line: the +2-point threshold.</figcaption>
-    </figure>
-    <details class="more">
-      <summary>More transfer results</summary>
-      <ul class="more-list">
-        <li>The full training set improves 12 of the 26 benchmarks, by up to 24.0 points on SAT.</li>
-        <li>Each controlled subset raises in-distribution WOVEN accuracy by 6.1 to 25.3 points, including on action types it does not train on.</li>
-        <li>With about 7 hours of generated video, WOVEN post-training yields a larger gain on a spatial-reasoning benchmark than mid-training the same backbone on 125,000 hours of video (Orca).</li>
-        <li>The gains hold at larger model scales and in a second model family.</li>
-      </ul>
-    </details>
-  </div>
-</section>
+</details>
 
 <style>
-  .chart { margin: 1.6rem auto 0; max-width: 1000px; }
-  .legend { display: flex; flex-wrap: wrap; gap: 0.4rem 1.1rem; font-size: 0.85rem; color: #445; margin-bottom: 0.8rem; }
-  .lg { display: inline-flex; align-items: center; gap: 0.4rem; }
-  .lg i { width: 12px; height: 12px; border-radius: 3px; display: inline-block; }
-  .bars { display: flex; flex-direction: column; gap: 4px; }
-  .bar-row, .axis-row { display: grid; grid-template-columns: 150px minmax(0, 1fr) 270px; align-items: center; gap: 0.6rem; }
-  .bname { font-size: 0.88rem; color: #222; text-align: right; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .bsub { font-size: 0.8rem; color: #667; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .track { position: relative; height: 20px; }
-  .track.axis { height: 16px; border-bottom: 1px solid #d5dbe6; }
-  .tick { position: absolute; transform: translateX(-50%); font-size: 0.72rem; color: #778; top: 0; }
-  .zero { position: absolute; top: -2px; bottom: -2px; width: 1px; background: #9aa3b2; }
-  .thr { position: absolute; top: -2px; bottom: -2px; width: 0; border-left: 1px dashed #c0392b; opacity: 0.6; }
-  .bar { position: absolute; top: 3px; height: 14px; border-radius: 3px; }
-  .val { position: absolute; top: 1px; font-size: 0.78rem; font-weight: 600; color: #333; font-variant-numeric: tabular-nums; white-space: nowrap; }
-  .bar-row.is-static .bname, .bar-row.is-static .bsub { color: #889; }
-  .bar-row.first-static { margin-top: 10px; padding-top: 10px; border-top: 1px dashed #d5dbe6; }
-  .chart figcaption { margin-top: 0.8rem; font-size: 0.88rem; line-height: 1.5; color: #556; }
-  @media (max-width: 760px) {
-      .bar-row, .axis-row { grid-template-columns: 112px minmax(0, 1fr); }
-    .bsub { display: none; }
-    .bname { font-size: 0.8rem; }
-  }
+  .radar-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem 1.4rem; }
+  .radar { margin: 0; }
+  .radar-head { display: flex; align-items: baseline; justify-content: center; gap: 0.6rem; margin-bottom: 0.2rem; }
+  .dname { font-size: 1.05rem; font-weight: 700; color: #14213a; }
+  .dmeta { font-size: 0.85rem; color: #556; }
+  .radar svg { width: 100%; height: auto; overflow: visible; display: block; }
+  .ring { fill: none; stroke: #e3e8f1; stroke-width: 1; stroke-dasharray: 3 3; }
+  .ring.outer { stroke-dasharray: none; }
+  .spoke { stroke: #e3e8f1; stroke-width: 1; }
+  .best { fill: rgba(36, 83, 196, 0.85); stroke: #2453c4; stroke-width: 2; stroke-linejoin: round; }
+  .base { fill: #e9edf4; stroke: #8a94a6; stroke-width: 1.5; stroke-linejoin: round; }
+  .dot { fill: #2453c4; stroke: #fff; stroke-width: 1.2; }
+  .ring-lab { font-size: 10px; fill: #7d8798; paint-order: stroke; stroke: #fff; stroke-width: 3px; stroke-linejoin: round; }
+  .ax-lab { font-size: 13px; }
+  .ax-name { fill: #1c2a3a; font-weight: 500; }
+  .ax-gain { fill: #2453c4; font-weight: 700; }
+  .key { display: inline-block; width: 12px; height: 12px; border-radius: 3px; vertical-align: -1px; margin: 0 0.25rem 0 0.6rem; }
+  .key-base { background: #eef1f6; border: 1.5px solid #8a94a6; }
+  .key-best { background: rgba(36, 83, 196, 0.85); }
+  @media (max-width: 760px) { .radar-grid { grid-template-columns: 1fr; } }
 </style>
