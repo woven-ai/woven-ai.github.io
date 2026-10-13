@@ -24,26 +24,30 @@ const r = sxy / Math.sqrt(sxx * syy);
 const FX0 = 4, FX1 = 25.5;
 
 // Evidence schematics.
-const ACTS = ['Camera motion', 'Object inspection', 'Navigation', 'Object manipulation', 'Passive physics'];
-// Content control on SAT (paper appendix, mean of 3 seeds).
-const CC = [
-  { l: ['Base'], v: 39.3, cls: 'base' },
-  { l: ['WOVEN'], v: 63.3, cls: 'real' },
-  { l: ['Scrambled'], v: 35.1, cls: 'ctl' },
-  { l: ['Mirrored'], v: 37.8, cls: 'ctl' },
-  { l: ['Other', '4-option data'], v: 44.0, cls: 'ctl' },
-];
-const CW = 440, CH = 270, CL = 50, CR = 8, CT = 18, CB = 50;
+// Content control (SAT, paper appendix, mean of 3 seeds): no training, correct transitions,
+// the same format with wrong transitions (scrambled, mirrored), and other multiple-choice data.
+const CW = 560, CH = 270, CL = 54, CR = 10, CT = 18, CB = 52, CBW = 52;
 const cy = (v: number) => CH - CB - (v / 70) * (CH - CB - CT);
-const CSLOT = (CW - CL - CR) / CC.length, CBW = CSLOT * 0.56;
-const cx = (k: number) => CL + CSLOT * k + (CSLOT - CBW) / 2;
+const CC = [
+  { x: 92, v: 39.3, cls: 'base' },
+  { x: 196, v: 63.3, cls: 'real' },
+  { x: 300, v: 35.1, cls: 'ctl' },
+  { x: 358, v: 37.8, cls: 'ctl' },
+  { x: 462, v: 44.0, cls: 'ctl' },
+];
+const CG = [
+  { x: 118, l: ['No training'] },
+  { x: 222, l: ['Correct transitions'] },
+  { x: 355, l: ['Same format,', 'wrong transitions'] },
+  { x: 488, l: ['Other multiple-', 'choice data'] },
+];
 ---
 
 <details class="rq" id="primitive" open>
   <summary>
     <span class="rq-tag">RQ3</span>
     <span class="rq-q">A primitive, or just a collection of task-specific effects?</span>
-    <span class="rq-a">A primitive — different sources of supervision build the same capability, and broad downstream gains result from it (r = 0.86 across the 11 subsets).</span>
+    <span class="rq-a">A primitive — different sources of supervision build the same capability, and broad downstream gains result from it.</span>
     <div class="schema">
       <figure class="schema-panel">
         <svg viewBox="0 0 440 236" role="img" aria-label="Task-specific effects: each supervision source improves only its own domain">
@@ -88,93 +92,86 @@ const cx = (k: number) => CL + CSLOT * k + (CSLOT - CBW) / 2;
   </summary>
   <div class="rq-body">
     <section class="ev">
-      <div class="ev-head"><span class="ev-n">a</span><h3 class="ev-t">Different sources improve the same capability</h3></div>
-      <div class="egrid three">
-        <article class="ecard">
-          <h4>Across action types</h4>
-          <svg viewBox="0 0 276 176" role="img" aria-label="Training on one action type also improves the four action types it does not train on">
-            <defs><marker id="ea" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#2453c4" /></marker></defs>
-            <rect x="4" y="54" width="86" height="48" rx="10" class="s-src" />
-            <text x="47" y="74" class="s-sm">Train on one</text>
-            <text x="47" y="91" class="s-b">action type</text>
-            <text x="47" y="138" class="s-big">43 / 44</text>
-            <text x="47" y="155" class="s-sm">untrained cases</text>
-            <text x="47" y="168" class="s-sm">improve</text>
-            {ACTS.map((a, k) => (
-              <g>
-                <line x1="92" y1="78" x2="116" y2={6 + k * 34 + 12} class="s-arr" marker-end="url(#ea)" />
-                <rect x="120" y={6 + k * 34} width="116" height="24" rx="7" class={k === 0 ? 's-box trained' : 's-box'} />
-                <text x="178" y={6 + k * 34 + 16} class="s-t">{a}</text>
-                {k === 0 ? <text x="256" y={6 + k * 34 + 15.5} class="s-tag">trained</text> : <text x="250" y={6 + k * 34 + 17} class="s-up">▲</text>}
-              </g>
-            ))}
+      <div class="ev-head"><span class="ev-n">a</span><h3 class="ev-t">Different sources improve the same capability? <span class="yes">— Yes</span></h3></div>
+      <div class="items">
+        <div class="item">
+          <h4 class="it">Training on one action type also improves the other action types</h4>
+          <svg viewBox="0 0 600 176" role="img" aria-label="Training on one action type also improves the four untrained action types; 43 of 44 untrained cases improve">
+            <defs><marker id="m1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#2453c4" /></marker></defs>
+            <path d="M100,64 V30 H500" class="s-arr" />
+            {[200, 300, 400, 500].map((x) => (<line x1={x} y1="30" x2={x} y2="60" class="s-arr" marker-end="url(#m1)" />))}
+            <circle cx="100" cy="88" r="24" class="n-on" />
+            {[200, 300, 400, 500].map((x) => (<g><circle cx={x} cy="88" r="24" class="n-off" /><text x={x} y="94" class="n-up">▲</text></g>))}
+            <text x="100" y="132" class="s-t">Trained</text>
+            <line x1="176" x2="524" y1="124" y2="124" class="s-brace" />
+            <text x="350" y="142" class="s-t">Untrained action types</text>
+            <text x="300" y="170" class="s-key"><tspan class="s-keyv">43 / 44</tspan> untrained cases improve</text>
           </svg>
-          <p>Every subset also improves the action types it does not train on.</p>
-        </article>
-        <article class="ecard">
-          <h4>Across reasoning types</h4>
-          <svg viewBox="0 0 276 176" role="img" aria-label="Training on forward prediction alone raises counterfactual substitution and removal; forward and inverse questions are answered right or wrong together after training">
-            <defs><marker id="eb" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#2453c4" /></marker></defs>
-            <rect x="4" y="14" width="88" height="58" rx="10" class="s-src" />
-            <text x="48" y="32" class="s-sm">Train only on</text>
-            <text x="48" y="49" class="s-b">forward</text>
-            <text x="48" y="64" class="s-b">prediction</text>
-            <text x="198" y="10" class="s-sm">Counterfactual</text>
-            <line x1="94" y1="36" x2="118" y2="30" class="s-arr" marker-end="url(#eb)" />
-            <line x1="94" y1="50" x2="118" y2="62" class="s-arr" marker-end="url(#eb)" />
-            <rect x="122" y="17" width="150" height="26" rx="7" class="s-box" />
-            <text x="132" y="34.5" class="s-t ta-s">substitution</text><text x="264" y="35" class="s-val ta-e">+48</text>
-            <rect x="122" y="49" width="150" height="26" rx="7" class="s-box" />
-            <text x="132" y="66.5" class="s-t ta-s">removal</text><text x="264" y="67" class="s-val ta-e">+25</text>
-            <line x1="4" x2="272" y1="90" y2="90" class="s-div" />
-            <text x="138" y="112" class="s-note blue">right or wrong together</text>
-            <rect x="6" y="120" width="84" height="28" rx="7" class="s-box" /><text x="48" y="138.5" class="s-t">Forward</text>
-            <rect x="186" y="120" width="84" height="28" rx="7" class="s-box" /><text x="228" y="138.5" class="s-t">Inverse</text>
-            <line x1="96" y1="134" x2="180" y2="134" class="s-arr" marker-start="url(#eb)" marker-end="url(#eb)" />
-            <text x="138" y="168" class="s-note">independent before training</text>
+        </div>
+        <div class="item">
+          <h4 class="it">Training on one reasoning operation also improves other operations</h4>
+          <svg viewBox="0 0 600 176" role="img" aria-label="Training on one reasoning operation also improves other operations, by up to 48 points">
+            <defs><marker id="m2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#2453c4" /></marker></defs>
+            <path d="M125,64 V30 H500" class="s-arr" />
+            {[250, 375, 500].map((x) => (<line x1={x} y1="30" x2={x} y2="60" class="s-arr" marker-end="url(#m2)" />))}
+            <rect x="99" y="64" width="52" height="48" rx="10" class="n-on" />
+            {[250, 375, 500].map((x) => (<g><rect x={x - 26} y="64" width="52" height="48" rx="10" class="n-off" /><text x={x} y="94" class="n-up">▲</text></g>))}
+            <text x="125" y="134" class="s-t">Trained</text>
+            <line x1="214" x2="536" y1="126" y2="126" class="s-brace" />
+            <text x="375" y="144" class="s-t">Untrained operations</text>
+            <text x="300" y="170" class="s-key">up to <tspan class="s-keyv">+48</tspan> points without training on them</text>
           </svg>
-          <p>Training on forward prediction alone raises counterfactual substitution by 48 points and removal by 25. After training, the forward and inverse questions about one transition are answered right or wrong together.</p>
-        </article>
-        <article class="ecard">
-          <h4>Not a shortcut</h4>
-          <svg viewBox="0 0 276 176" role="img" aria-label="With the unchanged-scene option removed the gain remains; counterfactual removal, whose answer is the unchanged scene, also improves">
-            <defs><marker id="ec" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#8a94a6" /></marker></defs>
-            <text x="4" y="12" class="s-sm ta-s">Unchanged-scene option removed</text>
-            {['A', 'B', 'C'].map((l, k) => (<g><rect x={4 + k * 26} y="22" width="22" height="22" rx="5" class="s-opt" /><text x={15 + k * 26} y="37.5" class="s-t">{l}</text></g>))}
-            <rect x="82" y="22" width="34" height="22" rx="5" class="s-opt gone" /><text x="99" y="37" class="s-same">same</text>
-            <line x1="80" y1="46" x2="118" y2="20" class="s-x" />
-            <line x1="122" y1="33" x2="140" y2="33" class="s-arr gray" marker-end="url(#ec)" />
-            <text x="146" y="28" class="s-sm ta-s">Counterfactual substitution</text>
-            <text x="146" y="46" class="s-val ta-s">28.5 → 93.3</text>
-            <line x1="4" x2="272" y1="66" y2="66" class="s-div" />
-            <text x="4" y="86" class="s-sm ta-s">Answer is the unchanged scene</text>
-            {['A', 'B', 'C'].map((l, k) => (<g><rect x={4 + k * 26} y="96" width="22" height="22" rx="5" class="s-opt" /><text x={15 + k * 26} y="111.5" class="s-t">{l}</text></g>))}
-            <rect x="82" y="96" width="34" height="22" rx="5" class="s-opt right" /><text x="99" y="111" class="s-same ok">same ✓</text>
-            <line x1="122" y1="107" x2="140" y2="107" class="s-arr gray" marker-end="url(#ec)" />
-            <text x="146" y="102" class="s-sm ta-s">Counterfactual removal</text>
-            <text x="146" y="120" class="s-val ta-s">18.6 → up to 49.6</text>
-            <line x1="4" x2="272" y1="140" y2="140" class="s-div" />
-            <text x="138" y="164" class="s-note">Rules out "pick the frame that changed"</text>
+        </div>
+        <div class="item">
+          <h4 class="it">Questions about the same transition become consistent</h4>
+          <svg viewBox="0 0 600 150" role="img" aria-label="Before training, predicting the outcome and identifying the action are answered independently; after training they are right or wrong together">
+            <defs><marker id="m3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#2453c4" /></marker></defs>
+            <text x="20" y="40" class="s-lab ta-s">Before training</text>
+            <rect x="150" y="20" width="150" height="32" rx="8" class="s-box" /><text x="225" y="41" class="s-t">Predict the outcome</text>
+            <line x1="306" x2="394" y1="36" y2="36" class="s-dash" />
+            <rect x="400" y="20" width="150" height="32" rx="8" class="s-box" /><text x="475" y="41" class="s-t">Identify the action</text>
+            <text x="350" y="68" class="s-note">independent</text>
+            <text x="20" y="112" class="s-lab ta-s">After training</text>
+            <rect x="150" y="92" width="150" height="32" rx="8" class="s-box" /><text x="225" y="113" class="s-t">Predict the outcome</text>
+            <line x1="308" x2="392" y1="108" y2="108" class="s-arr" marker-start="url(#m3)" marker-end="url(#m3)" />
+            <rect x="400" y="92" width="150" height="32" rx="8" class="s-box" /><text x="475" y="113" class="s-t">Identify the action</text>
+            <text x="350" y="142" class="s-note blue">right or wrong together</text>
           </svg>
-          <p>Without the unchanged-scene option, the gain remains. Counterfactual removal, whose answer is the unchanged scene, also improves.</p>
-        </article>
+        </div>
+        <div class="item">
+          <h4 class="it">The gains are not an answer shortcut</h4>
+          <svg viewBox="0 0 600 150" role="img" aria-label="Without the option a shortcut would rely on, the gain remains; where that option is the right answer, accuracy still rises">
+            <text x="20" y="40" class="s-lab ta-s">Shortcut option removed</text>
+            {['A', 'B', 'C'].map((l, k) => (<g><rect x={234 + k * 34} y="20" width="28" height="30" rx="6" class="s-opt" /><text x={248 + k * 34} y="40" class="s-t">{l}</text></g>))}
+            <rect x="336" y="20" width="28" height="30" rx="6" class="s-opt gone" /><text x="350" y="40" class="s-t dim">D</text>
+            <line x1="332" y1="54" x2="368" y2="16" class="s-x" />
+            <text x="402" y="40" class="s-res ta-s">✓ gain remains</text>
+            <text x="20" y="112" class="s-lab ta-s">Where the shortcut would fail</text>
+            {['A', 'B', 'C'].map((l, k) => (<g><rect x={234 + k * 34} y="92" width="28" height="30" rx="6" class="s-opt" /><text x={248 + k * 34} y="112" class="s-t">{l}</text></g>))}
+            <rect x="336" y="92" width="28" height="30" rx="6" class="s-opt right" /><text x="350" y="112" class="s-t okc">D</text>
+            <text x="402" y="112" class="s-res ta-s">✓ accuracy still rises</text>
+          </svg>
+        </div>
       </div>
     </section>
 
     <section class="ev">
-      <div class="ev-head"><span class="ev-n">b</span><h3 class="ev-t">The downstream gains result from that capability</h3></div>
-      <div class="egrid two">
-        <article class="ecard">
-          <h4>A common component</h4>
+      <div class="ev-head"><span class="ev-n">b</span><h3 class="ev-t">The downstream gains result from that capability? <span class="yes">— Yes</span></h3></div>
+      <div class="items">
+        <div class="item">
+          <h4 class="it">All subsets improve largely the same downstream benchmarks</h4>
           <div class="cmat">
             <img src="figures/profiles_raw.png" alt="Correlation matrix of the 11 subsets' transfer profiles; every cell is positive." width="506" height="506" loading="lazy" />
-            <div class="cmat-key"><span>0</span><span class="cmat-bar"></span><span>1</span><span class="cmat-lab">correlation</span></div>
+            <div class="cmat-side">
+              <p class="cmat-big">55 / 55</p>
+              <p class="cmat-txt">pairs of subsets with positively correlated transfer</p>
+              <div class="cmat-key"><span>0</span><span class="cmat-bar"></span><span>1</span></div>
+            </div>
           </div>
-          <p>The transfer profiles of the 11 subsets are positively correlated in all 55 pairs (mean 0.56). The first principal component explains 75% of the variance and tracks the WOVEN gains (r = 0.92–0.93).</p>
-        </article>
-        <article class="ecard">
-          <h4>More gain on WOVEN, more gain downstream</h4>
-          <svg viewBox={`0 0 ${SW} ${SH}`} role="img" aria-label={`Mean external gain against WOVEN gain for the 11 subsets; r = ${r.toFixed(2)}`}>
+        </div>
+        <div class="item">
+          <h4 class="it">Subsets that improve the capability more transfer more</h4>
+          <svg viewBox={`0 0 ${SW} ${SH}`} role="img" aria-label={`Mean downstream gain against WOVEN gain for the 11 subsets; r = ${r.toFixed(2)}`}>
             {[0, 1, 2, 3].map((t) => (
               <g>
                 <line x1={SL} x2={SW - SR} y1={sy(t)} y2={sy(t)} class="grid" />
@@ -184,62 +181,61 @@ const cx = (k: number) => CL + CSLOT * k + (CSLOT - CBW) / 2;
             {[0, 5, 10, 15, 20, 25].map((t) => (<text x={sx(t)} y={SH - SB + 18} class="tick" text-anchor="middle">{t}</text>))}
             <line x1={SL} x2={SW - SR} y1={sy(0)} y2={sy(0)} class="axis" />
             <line x1={sx(FX0)} y1={sy(icpt + slope * FX0)} x2={sx(FX1)} y2={sy(icpt + slope * FX1)} class="fit" />
-            {DOSE.map((d) => (
-              <circle cx={sx(d.w)} cy={sy(d.e)} r="6.5" class="pt"><title>{`${subsetName(d.s)}: +${d.w.toFixed(1)} on WOVEN, +${d.e.toFixed(2)} external`}</title></circle>
-            ))}
+            {DOSE.map((d) => (<circle cx={sx(d.w)} cy={sy(d.e)} r="6.5" class="pt" />))}
             <text x={sx(1)} y={sy(3.15)} class="r-lab">r = {r.toFixed(2)}</text>
-            <text x={(SL + SW - SR) / 2} y={SH - 8} class="ax-title" text-anchor="middle">Gain in WOVEN accuracy after SFT (points)</text>
-            <text transform={`translate(16 ${(ST + SH - SB) / 2}) rotate(-90)`} class="ax-title" text-anchor="middle">Mean external gain (points)</text>
+            <text x={(SL + SW - SR) / 2} y={SH - 8} class="ax-title" text-anchor="middle">Gain on WOVEN (points)</text>
+            <text transform={`translate(16 ${(ST + SH - SB) / 2}) rotate(-90)`} class="ax-title" text-anchor="middle">Mean downstream gain (points)</text>
           </svg>
-          <p>Across the 11 subsets, r = 0.86 (Spearman 0.86; 0.84–0.92 leaving out any one subset; positive within the temporal and the non-temporal subsets).</p>
-        </article>
-        <article class="ecard">
-          <h4>Content control</h4>
-          <svg viewBox={`0 0 ${CW} ${CH}`} role="img" aria-label="SAT accuracy after training on real WOVEN data and three controls">
+        </div>
+        <div class="item">
+          <h4 class="it">Only correct transitions produce the gains</h4>
+          <svg viewBox={`0 0 ${CW} ${CH}`} role="img" aria-label="Downstream accuracy after training on correct transitions, on the same format with wrong transitions, and on other multiple-choice data">
             {[0, 20, 40, 60].map((t) => (
               <g>
                 <line x1={CL} x2={CW - CR} y1={cy(t)} y2={cy(t)} class="grid" />
                 <text x={CL - 8} y={cy(t) + 4} class="tick" text-anchor="end">{t}</text>
               </g>
             ))}
-            {CC.map((c, k) => (
+            <line x1={CL} x2={CW - CR} y1={cy(39.3)} y2={cy(39.3)} class="cbase" />
+            {CC.map((c) => (
               <g>
-                <rect x={cx(k)} y={cy(c.v)} width={CBW} height={cy(0) - cy(c.v)} rx="4" class={`cbar ${c.cls}`} />
-                <text x={cx(k) + CBW / 2} y={cy(c.v) - 6} class="cval" text-anchor="middle">{c.v.toFixed(1)}</text>
-                {c.l.map((t, i) => (<text x={cx(k) + CBW / 2} y={cy(0) + 17 + i * 14} class="clab" text-anchor="middle">{t}</text>))}
+                <rect x={c.x} y={cy(c.v)} width={CBW} height={cy(0) - cy(c.v)} rx="4" class={`cbar ${c.cls}`} />
+                <text x={c.x + CBW / 2} y={cy(c.v) - 6} class="cval" text-anchor="middle">{c.v.toFixed(1)}</text>
               </g>
             ))}
-            <line x1={CL} x2={CW - CR} y1={cy(CC[0].v)} y2={cy(CC[0].v)} class="cbase" />
+            {CG.map((g) => g.l.map((t, i) => (<text x={g.x} y={cy(0) + 18 + i * 15} class="clab" text-anchor="middle">{t}</text>)))}
             <line x1={CL} x2={CW - CR} y1={cy(0)} y2={cy(0)} class="axis" />
-            <text transform={`translate(15 ${(CT + CH - CB) / 2}) rotate(-90)`} class="ax-title" text-anchor="middle">SAT accuracy (%)</text>
+            <text transform={`translate(15 ${(CT + CH - CB) / 2}) rotate(-90)`} class="ax-title" text-anchor="middle">Downstream accuracy (%)</text>
           </svg>
-          <p>The same question format with scrambled or mirrored action–outcome pairs, or other four-option data, does not reproduce the gains.</p>
-        </article>
-        <article class="ecard">
-          <h4>Specificity</h4>
-          <svg viewBox="0 0 420 210" role="img" aria-label="All 22 transition benchmarks improve; none of the 4 static-perception or general video QA benchmarks gains more than 2 points">
-            <rect x="12" y="20" width="186" height="150" rx="12" class="sp-yes" />
-            <text x="105" y="48" class="sp-h yes">Benchmarks with</text>
-            <text x="105" y="64" class="sp-h yes">visual transitions</text>
-            <text x="105" y="112" class="sp-big yes">22 / 22</text>
-            <text x="105" y="138" class="sp-s">improve</text>
-            <rect x="222" y="20" width="186" height="150" rx="12" class="sp-no" />
-            <text x="315" y="48" class="sp-h">Static perception,</text>
-            <text x="315" y="64" class="sp-h">general video QA</text>
-            <text x="315" y="112" class="sp-big">0 / 4</text>
-            <text x="315" y="138" class="sp-s">gain more than 2 points</text>
+        </div>
+        <div class="item">
+          <h4 class="it">Gains appear only on tasks that involve visual transitions</h4>
+          <svg viewBox="0 0 520 170" role="img" aria-label="All 22 benchmarks with visual transitions improve; none of the 4 static-perception or general video QA benchmarks gains more than 2 points">
+            <rect x="20" y="10" width="220" height="150" rx="12" class="sp-yes" />
+            <text x="130" y="36" class="sp-h yes">Tasks with</text>
+            <text x="130" y="53" class="sp-h yes">visual transitions</text>
+            <text x="130" y="104" class="sp-big yes">22 / 22</text>
+            <text x="130" y="134" class="sp-s">improve</text>
+            <rect x="280" y="10" width="220" height="150" rx="12" class="sp-no" />
+            <text x="390" y="36" class="sp-h">Static perception,</text>
+            <text x="390" y="53" class="sp-h">general video QA</text>
+            <text x="390" y="104" class="sp-big">0 / 4</text>
+            <text x="390" y="134" class="sp-s">gain more than 2 points</text>
           </svg>
-          <p>The gains appear only where the task involves a visual transition.</p>
-        </article>
+        </div>
       </div>
     </section>
 
     <section class="ev plus">
       <div class="ev-head"><span class="ev-n">+</span><h3 class="ev-t">Further test of causality by intervention</h3></div>
-      <p class="ev-x">With the training budget fixed at 2,000 items, replacing 30–50% of a benchmark’s own training items with WOVEN items keeps accuracy comparable (blue), above simply deleting them (orange dashed).</p>
-      <figure class="ev-fig">
-        <a href="figures/substitution.png" target="_blank" rel="noopener" class="zoom-link" title="Open full-size image"><img src="figures/substitution.png" alt="Three panels (SAT, ActionEQA, CLEVRER) plotting accuracy against the share p of task-specific training data replaced by WOVEN items under a fixed 2,000-item budget. Accuracy stays near the p = 0 level up to 30 to 50 percent replacement and stays above the deletion control." width="2000" height="573" loading="lazy" /></a>
-      </figure>
+      <div class="items">
+        <div class="item">
+          <h4 class="it">Transition supervision can replace part of task-specific training data</h4>
+          <figure class="ev-fig wide">
+            <a href="figures/substitution.png" target="_blank" rel="noopener" class="zoom-link" title="Open full-size image"><img src="figures/substitution.png" alt="Three panels plotting accuracy against the share of task-specific training data replaced by WOVEN items under a fixed 2,000-item budget. Accuracy stays near the original level up to 30 to 50 percent replacement and stays above simply deleting those items." width="2000" height="573" loading="lazy" /></a>
+          </figure>
+        </div>
+      </div>
     </section>
   </div>
 </details>
@@ -269,6 +265,7 @@ const cx = (k: number) => CL + CSLOT * k + (CSLOT - CBW) / 2;
   .ev-head { display: flex; align-items: center; gap: 0.6rem; }
   .ev-n { flex: none; width: 30px; height: 30px; border-radius: 50%; background: #1c2a5a; color: #fff; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; font-size: 0.95rem; }
   .ev.plus .ev-n { background: #fff; color: #1c2a5a; border: 2px solid #1c2a5a; font-size: 1.1rem; }
+  .ev-t .yes { color: #1f7a4d; }
   .ev-t { margin: 0; font-size: 1.08rem; font-weight: 700; color: #14213a; line-height: 1.35; }
   .ev-x { margin: 0; font-size: 0.95rem; line-height: 1.6; color: #3a4558; max-width: 760px; }
   .ev-fig { margin: 0.3rem 0 0; }
@@ -283,6 +280,26 @@ const cx = (k: number) => CL + CSLOT * k + (CSLOT - CBW) / 2;
   .pt { fill: #2453c4; stroke: #fff; stroke-width: 1.5; }
   .r-lab { font-size: 17px; font-weight: 700; fill: #2453c4; }
 
+  .items { display: flex; flex-direction: column; }
+  .item { display: flex; flex-direction: column; align-items: center; gap: 0.8rem; padding: 1.2rem 0; border-top: 1px solid #eef1f6; }
+  .item:first-child { border-top: 0; padding-top: 0.6rem; }
+  .it { margin: 0; align-self: stretch; font-size: 1.02rem; font-weight: 700; color: #14213a; }
+  .item > svg { width: 100%; max-width: 600px; height: auto; display: block; overflow: visible; }
+  .ev-fig.wide { width: 100%; margin: 0; }
+  .n-on { fill: #1c2a5a; }
+  .n-off { fill: #eef3fd; stroke: #c9d6f6; stroke-width: 1.2; }
+  .n-up { font-size: 15px; fill: #1f7a4d; text-anchor: middle; }
+  .s-brace { stroke: #c3cad6; stroke-width: 1.2; }
+  .s-key { font-size: 13px; fill: #4a5263; text-anchor: middle; }
+  .s-keyv { font-size: 17px; font-weight: 800; fill: #2453c4; }
+  .s-lab { font-size: 13px; font-weight: 600; fill: #4a5263; }
+  .s-dash { stroke: #a3acbb; stroke-width: 1.6; stroke-dasharray: 5 5; }
+  .s-res { font-size: 14px; font-weight: 700; fill: #1f7a4d; }
+  .s-t.dim { fill: #a3acbb; }
+  .s-t.okc { fill: #1f7a4d; }
+  .cmat-side { display: flex; flex-direction: column; gap: 0.4rem; max-width: 220px; }
+  .cmat-big { margin: 0; font-size: 1.9rem; font-weight: 800; color: #2453c4; line-height: 1.1; }
+  .cmat-txt { margin: 0; font-size: 0.92rem; color: #4a5263; line-height: 1.45; }
   .egrid { display: grid; gap: 1rem; }
   .egrid.three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .egrid.two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -296,7 +313,7 @@ const cx = (k: number) => CL + CSLOT * k + (CSLOT - CBW) / 2;
   .s-box.trained { stroke: #0f1f4d; stroke-width: 2.2; }
   .s-sm { font-size: 11px; fill: #6b7486; text-anchor: middle; }
   .s-b { font-size: 12.5px; font-weight: 700; fill: #1c2a5a; text-anchor: middle; }
-  .s-t { font-size: 11.5px; font-weight: 600; fill: #1c2a5a; text-anchor: middle; }
+  .s-t { font-size: 12.5px; font-weight: 600; fill: #1c2a5a; text-anchor: middle; }
   .s-tag { font-size: 9.5px; font-weight: 700; fill: #0f1f4d; text-anchor: middle; }
   .s-up { font-size: 10px; fill: #1f7a4d; text-anchor: middle; }
   .s-big { font-size: 23px; font-weight: 800; fill: #2453c4; text-anchor: middle; }
@@ -304,7 +321,7 @@ const cx = (k: number) => CL + CSLOT * k + (CSLOT - CBW) / 2;
   .s-arr { stroke: #2453c4; stroke-width: 1.6; fill: none; }
   .s-arr.gray { stroke: #8a94a6; }
   .s-div { stroke: #eef1f6; stroke-width: 1; }
-  .s-note { font-size: 11px; fill: #6b7486; text-anchor: middle; }
+  .s-note { font-size: 12.5px; fill: #6b7486; text-anchor: middle; }
   .s-note.blue { fill: #2453c4; font-weight: 700; }
   .s-opt { fill: #fff; stroke: #c9d3e3; stroke-width: 1.2; }
   .s-opt.gone { fill: #f6f7f9; stroke: #c3cad6; stroke-dasharray: 3 2; }
@@ -312,20 +329,20 @@ const cx = (k: number) => CL + CSLOT * k + (CSLOT - CBW) / 2;
   .s-same { font-size: 9.5px; font-weight: 600; fill: #6b7486; text-anchor: middle; }
   .s-x { stroke: #d14343; stroke-width: 2; }
   .s-ok { font-size: 13px; font-weight: 800; fill: #1f7a4d; text-anchor: middle; }
-  .cmat { display: flex; align-items: center; gap: 0.9rem; }
-  .cmat img { width: 58%; height: auto; display: block; border-radius: 4px; }
-  .cmat-key { display: grid; grid-template-columns: auto auto auto; align-items: center; column-gap: 0.35rem; row-gap: 0.25rem; font-size: 0.78rem; color: #556; }
+  .cmat { display: flex; align-items: center; justify-content: center; gap: 1.4rem; width: 100%; max-width: 600px; }
+  .cmat img { width: 300px; max-width: 55%; height: auto; display: block; border-radius: 4px; }
+  .cmat-key { display: flex; align-items: center; gap: 0.35rem; font-size: 0.78rem; color: #556; }
   .cmat-bar { display: inline-block; width: 64px; height: 10px; border-radius: 3px; background: linear-gradient(90deg, #fbeee6, #f4a582, #d6604d, #67001f); }
   .cmat-lab { grid-column: 1 / -1; text-align: center; }
   .cbar.base { fill: #b8c0cc; }
   .cbar.real { fill: #2453c4; }
   .cbar.ctl { fill: #d9dee7; }
-  .cval { font-size: 13.5px; font-weight: 700; fill: #14213a; }
-  .clab { font-size: 12px; font-weight: 500; fill: #1c2a3a; }
+  .cval { font-size: 13.5px; font-weight: 700; fill: #14213a; paint-order: stroke; stroke: #fff; stroke-width: 4px; stroke-linejoin: round; }
+  .clab { font-size: 13px; font-weight: 500; fill: #1c2a3a; }
   .cbase { stroke: #8a94a6; stroke-width: 1.2; stroke-dasharray: 5 4; }
   .sp-yes { fill: #edf2fd; stroke: #c9d6f6; stroke-width: 1; }
   .sp-no { fill: #f2f3f6; stroke: #d5dbe6; stroke-width: 1; }
-  .sp-h { font-size: 13px; font-weight: 700; fill: #6b7486; text-anchor: middle; }
+  .sp-h { font-size: 13.5px; font-weight: 700; fill: #6b7486; text-anchor: middle; }
   .sp-h.yes { fill: #2453c4; }
   .sp-big { font-size: 30px; font-weight: 800; fill: #8a94a6; text-anchor: middle; }
   .sp-big.yes { fill: #2453c4; }
