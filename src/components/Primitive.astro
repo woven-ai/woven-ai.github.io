@@ -97,10 +97,10 @@ const CG = [
   </summary>
   <div class="rq-body">
     <section class="ev">
-      <div class="ev-head"><span class="ev-n">a</span><h3 class="ev-t">Different sources improve the same capability? <span class="yes">— Yes</span></h3></div>
+      <div class="ev-head"><span class="ev-n">A</span><h3 class="ev-t">Different sources improve the same capability? <span class="yes">— Yes</span></h3></div>
       <div class="items">
         <div class="item">
-          <h4 class="it">Each source improves far beyond the slice it trains on</h4>
+          <h4 class="it"><span class="it-n">A.1</span>Each source improves far beyond the slice it trains on</h4>
           <svg viewBox="0 0 600 236" role="img" aria-label="If each source learned only its own slice, only the trained cell would improve; instead, gains appear across the whole grid">
             {[{ cx: 150, lit: false }, { cx: 450, lit: true }].map((p) => (
               <g>
@@ -119,7 +119,7 @@ const CG = [
           <div class="g-key"><span class="k on"></span>trained<span class="k lit"></span>improved</div>
         </div>
         <div class="item">
-          <h4 class="it">Questions about the same transition become consistent</h4>
+          <h4 class="it"><span class="it-n">A.2</span>Questions about the same transition become consistent</h4>
           <svg viewBox="0 0 600 150" role="img" aria-label="Before training, predicting the outcome and identifying the action are answered independently; after training they are right or wrong together">
             <defs><marker id="m3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#2453c4" /></marker></defs>
             <text x="20" y="40" class="s-lab ta-s">Before training</text>
@@ -135,7 +135,7 @@ const CG = [
           </svg>
         </div>
         <div class="item">
-          <h4 class="it">Not a shortcut: better both when the answer is a changed scene and when it is the unchanged scene</h4>
+          <h4 class="it"><span class="it-n">A.3</span>Not a shortcut: better both when the answer is a changed scene and when it is the unchanged scene</h4>
           <svg viewBox="0 0 600 196" role="img" aria-label="After training, the model is better both when the correct answer is a changed scene and when it is the unchanged scene">
             <defs><marker id="m4" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#8a94a6" /></marker></defs>
             {[{ cx: 150, moved: true, label: 'Answer: a changed scene' }, { cx: 450, moved: false, label: 'Answer: the unchanged scene' }].map((c) => (
@@ -160,10 +160,10 @@ const CG = [
     </section>
 
     <section class="ev">
-      <div class="ev-head"><span class="ev-n">b</span><h3 class="ev-t">The downstream gains result from that capability? <span class="yes">— Yes</span></h3></div>
+      <div class="ev-head"><span class="ev-n">B</span><h3 class="ev-t">The downstream gains result from that capability? <span class="yes">— Yes</span></h3></div>
       <div class="items">
         <div class="item">
-          <h4 class="it">All subsets improve largely the same downstream benchmarks</h4>
+          <h4 class="it"><span class="it-n">B.1</span>All subsets improve largely the same downstream benchmarks</h4>
           <div class="cmat">
             <img src="figures/profiles_raw.png" alt="Correlation matrix of the 11 subsets' transfer profiles; every cell is positive." width="506" height="506" loading="lazy" />
             <div class="cmat-side">
@@ -174,7 +174,7 @@ const CG = [
           </div>
         </div>
         <div class="item">
-          <h4 class="it">Subsets that improve the capability more transfer more</h4>
+          <h4 class="it"><span class="it-n">B.2</span>Subsets that improve the capability more transfer more</h4>
           <svg viewBox={`0 0 ${SW} ${SH}`} role="img" aria-label={`Mean downstream gain against WOVEN gain for the 11 subsets; r = ${r.toFixed(2)}`}>
             {[0, 1, 2, 3].map((t) => (
               <g>
@@ -192,7 +192,7 @@ const CG = [
           </svg>
         </div>
         <div class="item">
-          <h4 class="it">Only correct transitions produce the gains</h4>
+          <h4 class="it"><span class="it-n">B.3</span>Only correct transitions produce the gains</h4>
           <svg viewBox={`0 0 ${CW} ${CH}`} role="img" aria-label="Downstream accuracy after training on correct transitions, on the same format with wrong transitions, and on other multiple-choice data">
             {[0, 20, 40, 60].map((t) => (
               <g>
@@ -213,7 +213,7 @@ const CG = [
           </svg>
         </div>
         <div class="item">
-          <h4 class="it">Gains appear only on tasks that involve visual transitions</h4>
+          <h4 class="it"><span class="it-n">B.4</span>Gains appear only on tasks that involve visual transitions</h4>
           <svg viewBox="0 0 520 170" role="img" aria-label="All 22 benchmarks with visual transitions improve; none of the 4 static-perception or general video QA benchmarks gains more than 2 points">
             <rect x="20" y="10" width="220" height="150" rx="12" class="sp-yes" />
             <text x="130" y="36" class="sp-h yes">Tasks with</text>
@@ -284,9 +284,11 @@ const CG = [
   .pt { fill: #2453c4; stroke: #fff; stroke-width: 1.5; }
   .r-lab { font-size: 17px; font-weight: 700; fill: #2453c4; }
 
-  .items { display: flex; flex-direction: column; }
+  .items { display: flex; flex-direction: column; padding-left: calc(30px + 0.6rem); }
+  .it-n { color: #2453c4; margin-right: 0.55rem; font-variant-numeric: tabular-nums; }
   .item { display: flex; flex-direction: column; align-items: center; gap: 0.8rem; padding: 1.2rem 0; border-top: 1px solid #eef1f6; }
   .item:first-child { border-top: 0; padding-top: 0.6rem; }
+  @media (max-width: 520px) { .items { padding-left: 0.9rem; } }
   .it { margin: 0; align-self: stretch; font-size: 1.02rem; font-weight: 700; color: #14213a; }
   .item > svg { width: 100%; max-width: 600px; height: auto; display: block; overflow: visible; }
   .ev-fig.wide { width: 100%; margin: 0; }
