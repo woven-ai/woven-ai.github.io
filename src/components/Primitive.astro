@@ -5,7 +5,7 @@ import { DOSE, subsetName } from '../data/woven';
 // Schematic: two explanations of the gains (left: task-specific effects; right: a shared primitive).
 const SRC = ['Camera motion', 'Manipulation', 'Passive physics'];
 const DST = ['Spatial', 'Embodied', 'Physical'];
-const BW = 132, BH = 40, YS = [52, 116, 180];
+const BW = 132, BH = 44, YS = [48, 112, 176];
 const PW = 112, PH = 92, PX = 164, PY = 102;
 
 // Dose-response scatter: WOVEN gain after SFT against the mean external gain, one dot per subset.
@@ -50,7 +50,8 @@ const DSB = [
           {YS.map((y, k) => (
             <g>
               <rect x="20" y={y} width={BW} height={BH} rx="9" class="box src" />
-              <text x={20 + BW / 2} y={y + BH / 2 + 5} class="box-t">{SRC[k]}</text>
+              <text x={20 + BW / 2} y={y + 16} class="box-w">WOVEN</text>
+              <text x={20 + BW / 2} y={y + 34} class="box-t">{SRC[k]}</text>
               <rect x={440 - 20 - BW} y={y} width={BW} height={BH} rx="9" class="box dst" />
               <text x={440 - 20 - BW / 2} y={y + BH / 2 + 5} class="box-t">{DST[k]}</text>
               <line x1={20 + BW + 8} y1={y + BH / 2} x2={440 - 20 - BW - 10} y2={y + BH / 2} class="arrow gray" marker-end="url(#ah-gray)" />
@@ -67,7 +68,8 @@ const DSB = [
           {YS.map((y, k) => (
             <g>
               <rect x="6" y={y} width={120} height={BH} rx="9" class="box src" />
-              <text x={66} y={y + BH / 2 + 5} class="box-t">{SRC[k]}</text>
+              <text x={66} y={y + 16} class="box-w">WOVEN</text>
+              <text x={66} y={y + 34} class="box-t">{SRC[k]}</text>
               <rect x={314} y={y} width={120} height={BH} rx="9" class="box dst" />
               <text x={374} y={y + BH / 2 + 5} class="box-t">{DST[k]}</text>
               <line x1={130} y1={y + BH / 2} x2={PX - 6} y2={PY + PH / 2 + (k - 1) * 22} class="arrow blue" marker-end="url(#ah-blue)" />
@@ -253,6 +255,7 @@ const DSB = [
   .box.src { fill: #e6edfc; stroke: #c9d6f6; }
   .box.dst { fill: #fff; stroke: #d5dbe6; }
   .box-t { font-size: 14px; font-weight: 600; fill: #1c2a5a; text-anchor: middle; }
+  .box-w { font-size: 10.5px; font-weight: 800; letter-spacing: 0.08em; fill: #2453c4; text-anchor: middle; }
   .arrow { stroke-width: 2; fill: none; }
   .arrow.gray { stroke: #a3acbb; }
   .arrow.blue { stroke: #2453c4; }
