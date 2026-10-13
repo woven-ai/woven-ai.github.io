@@ -137,7 +137,7 @@ const DSB = [
       <div class="ev-head"><span class="ev-n">B</span><h3 class="ev-t">The downstream gains result from that capability? <span class="yes">— Yes</span></h3></div>
       <div class="items">
         <div class="item">
-          <h4 class="it"><span class="it-n">B.1</span>The model learns a similar profile from different sources of supervision<span class="ok"> ✓</span><span class="inst">, instead of a different profile for each source</span></h4>
+          <h4 class="it"><span class="it-n">B.1</span>The model learns a similar profile from different sources of supervision<span class="ok"> ✓</span><span class="inst">, instead of a trivial collection of task-specific effects</span></h4>
           <div class="cmat">
             <img src="figures/profiles_raw.png" alt="Correlation matrix of the 11 subsets' transfer profiles; every cell is positive." width="506" height="506" loading="lazy" />
             <div class="cmat-side">
@@ -149,7 +149,7 @@ const DSB = [
           <p class="it-cap">All pairs of sources have positively correlated transfer: they improve largely the same downstream benchmarks.</p>
         </div>
         <div class="item">
-          <h4 class="it"><span class="it-n">B.2</span>Downstream gains grow with the capability learned<span class="ok"> ✓</span><span class="inst">, instead of being unrelated to it</span></h4>
+          <h4 class="it"><span class="it-n">B.2</span>Downstream gains grow with the capability learned<span class="ok"> ✓</span><span class="inst">, instead of bypassing it</span></h4>
           <svg viewBox={`0 0 ${SW} ${SH}`} role="img" aria-label={`Mean downstream gain against WOVEN gain for the 11 subsets; r = ${r.toFixed(2)}`}>
             {[0, 1, 2, 3].map((t) => (
               <g>
@@ -228,7 +228,7 @@ const DSB = [
       <div class="ev-head"><span class="ev-n">+</span><h3 class="ev-t">Further test of causality by intervention</h3></div>
       <div class="items">
         <div class="item">
-          <h4 class="it">Transition supervision can replace part of task-specific training data<span class="ok"> ✓</span><span class="inst">, instead of acting like deleted data</span></h4>
+          <h4 class="it">Transition supervision can replace part of task-specific training data<span class="ok"> ✓</span></h4>
           <figure class="ev-fig wide">
             <a href="figures/substitution.png" target="_blank" rel="noopener" class="zoom-link" title="Open full-size image"><img src="figures/substitution.png" alt="Three panels plotting accuracy against the share of task-specific training data replaced by WOVEN items under a fixed 2,000-item budget. Accuracy stays near the original level up to 30 to 50 percent replacement and stays above simply deleting those items." width="2000" height="573" loading="lazy" /></a>
           </figure>
