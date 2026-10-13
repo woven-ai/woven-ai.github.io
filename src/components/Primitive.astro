@@ -94,16 +94,16 @@ const DSB = [
       <div class="ev-head"><span class="ev-n">A</span><h3 class="ev-t">Different sources improve the same capability? <span class="yes">— Yes</span></h3></div>
       <div class="items">
         <div class="item">
-          <h4 class="it"><span class="it-n">A.1</span>Each source improves far beyond the slice it trains on<span class="ok"> ✓</span><span class="inst">, instead of only that slice</span></h4>
-          <svg viewBox="0 0 640 156" role="img" aria-label="If each source learned only its own slice, only the trained data would improve; instead, data from other sources improve too">
+          <h4 class="it"><span class="it-n">A.1</span>Each form of transition supervision generalizes broadly to other forms of transitions<span class="ok"> ✓</span><span class="inst">, instead of being limited to improving its own form</span></h4>
+          <svg viewBox="0 0 640 156" role="img" aria-label="If supervision helped only its own form, only the trained form would improve; instead, other forms of transitions improve too">
             <text x={CX0 + CS / 2} y="20" class="g-ax">Trained</text>
-            <text x={CX0 + CP + (CN - 1) * CP / 2 - (CP - CS) / 2} y="20" class="g-ax">Other sources of data</text>
+            <text x={CX0 + CP + (CN - 1) * CP / 2 - (CP - CS) / 2} y="20" class="g-ax">Other forms of transitions</text>
             <line x1={CX0 + CP} x2={CX0 + CN * CP - (CP - CS)} y1="30" y2="30" class="s-brace" />
             {[{ y: 44, lit: false }, { y: 112, lit: true }].map((r) => (
               <g>
                 {r.lit
                   ? <text x="226" y={r.y + 20} class="s-lab ta-e">What we observe</text>
-                  : <g><text x="226" y={r.y + 11} class="s-lab ta-e">If each source learned</text><text x="226" y={r.y + 28} class="s-lab ta-e">only its own slice</text></g>}
+                  : <g><text x="226" y={r.y + 11} class="s-lab ta-e">If supervision helped</text><text x="226" y={r.y + 28} class="s-lab ta-e">only its own form</text></g>}
                 {Array.from({ length: CN }, (_, k) => (
                   <rect x={CX0 + k * CP} y={r.y} width={CS} height={CS} rx="6" class={k === 0 ? 'g-cell on' : r.lit ? 'g-cell lit' : 'g-cell'} />
                 ))}
@@ -113,7 +113,7 @@ const DSB = [
           </svg>
         </div>
         <div class="item">
-          <h4 class="it"><span class="it-n">A.2</span>The model learns the transition itself<span class="ok"> ✓</span><span class="inst">, instead of separate skills for each question</span></h4>
+          <h4 class="it"><span class="it-n">A.2</span>The model really learns the transition<span class="ok"> ✓</span><span class="inst">, instead of just better question answering</span></h4>
           <svg class="cy" viewBox="0 0 280 200" role="img" aria-label="Consistency of answers to different questions from the same transition: 19 percent before training, 94 percent after training">
             {[0, 50, 100].map((t) => (<g><line x1="40" x2="270" y1={cyc(t)} y2={cyc(t)} class="grid" /><text x="32" y={cyc(t) + 4} class="tick" text-anchor="end">{t}%</text></g>))}
             <rect x="72" y={cyc(19.0)} width="64" height={cyc(0) - cyc(19.0)} rx="5" class="cy-before" />
@@ -314,7 +314,8 @@ const DSB = [
   .w-chip.dom { fill: #edf2fd; stroke: #c9d6f6; }
   .w-ct.dom { fill: #2453c4; }
   .w-more { font-size: 18px; font-weight: 700; fill: #8a94a6; text-anchor: middle; }
-  .it-n { color: #2453c4; margin-right: 0.55rem; font-variant-numeric: tabular-nums; }
+  .it-n { color: #2453c4; display: inline-block; width: 2.4em; text-indent: 0; font-variant-numeric: tabular-nums; }
+  .it:has(.it-n) { padding-left: 2.4em; text-indent: -2.4em; }
   .item { display: flex; flex-direction: column; align-items: center; gap: 0.8rem; padding: 1.2rem 0; border-top: 1px solid #eef1f6; }
   .item:first-child { border-top: 0; padding-top: 0.6rem; }
   @media (max-width: 520px) { .items { padding-left: 0.9rem; } }
