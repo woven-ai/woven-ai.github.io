@@ -32,12 +32,14 @@ const pageTitle = "WOVEN: Weaving Visual World Modeling into Multimodal LLMs";
   </section>
   <AuthorsCitation />
   <script>
-    // Open the question card a link points to (for example, the headline numbers in the hero).
-    const openTarget = () => {
+    // Every visit and every refresh starts at the top with all question cards collapsed.
+    if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+    const clearHash = () => history.replaceState(null, '', location.pathname + location.search);
+    if (location.hash) { clearHash(); window.scrollTo(0, 0); }
+    // A headline number opens the question card it points to.
+    window.addEventListener('hashchange', () => {
       const el = location.hash ? document.getElementById(location.hash.slice(1)) : null;
-      if (el && el.tagName === 'DETAILS') { (el as HTMLDetailsElement).open = true; el.scrollIntoView({ block: 'start' }); }
-    };
-    window.addEventListener('hashchange', openTarget);
-    openTarget();
+      if (el && el.tagName === 'DETAILS') { (el as HTMLDetailsElement).open = true; el.scrollIntoView({ block: 'start' }); clearHash(); }
+    });
   </script>
 </Layout>
