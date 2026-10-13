@@ -22,17 +22,21 @@ const syy = ys.reduce((s, y) => s + (y - my) ** 2, 0);
 const slope = sxy / sxx, icpt = my - slope * mx;
 const r = sxy / Math.sqrt(sxx * syy);
 const FX0 = 4, FX1 = 25.5;
+// Consistency of answers to questions from one transition (paper appendix: 19.0 before, 94.3 after training on the full set).
+const cyc = (v: number) => 168 - (v / 100) * 140;
 
 // One row of data cells for the spread schematic: the trained cell, then data from other sources.
 const CN = 7, CS = 30, CP = 40, CX0 = 244;
 
 // Evidence schematics.
-// Downstream benchmarks of the content control (paper appendix).
+// Downstream benchmarks of the content control (paper appendix): domain tags, then benchmark names.
 const DSB = [
-  { n: 'SAT', x: 250, w: 56 },
-  { n: 'SPAR-Bench', x: 318, w: 106 },
-  { n: 'ActionEQA', x: 436, w: 100 },
-  { n: 'WorldPrediction', x: 548, w: 132 },
+  { n: 'Spatial', x: 40, w: 72, dom: true },
+  { n: 'Embodied', x: 122, w: 86, dom: true },
+  { n: 'SAT', x: 228, w: 54 },
+  { n: 'SPAR-Bench', x: 292, w: 104 },
+  { n: 'ActionEQA', x: 406, w: 98 },
+  { n: 'WorldPrediction', x: 514, w: 132 },
 ];
 ---
 
@@ -90,7 +94,7 @@ const DSB = [
       <div class="ev-head"><span class="ev-n">A</span><h3 class="ev-t">Different sources improve the same capability? <span class="yes">— Yes</span></h3></div>
       <div class="items">
         <div class="item">
-          <h4 class="it"><span class="it-n">A.1</span>Each source improves far beyond the slice it trains on</h4>
+          <h4 class="it"><span class="it-n">A.1</span>Each source improves far beyond the slice it trains on<span class="ok"> ✓</span><span class="inst">, instead of only that slice</span></h4>
           <svg viewBox="0 0 640 156" role="img" aria-label="If each source learned only its own slice, only the trained data would improve; instead, data from other sources improve too">
             <text x={CX0 + CS / 2} y="20" class="g-ax">Trained</text>
             <text x={CX0 + CP + (CN - 1) * CP / 2 - (CP - CS) / 2} y="20" class="g-ax">Other sources of data</text>
@@ -108,35 +112,22 @@ const DSB = [
             ))}
           </svg>
         </div>
-        <div class="item">
-          <h4 class="it"><span class="it-n">A.2</span>Questions derived from the same transition become correlated</h4>
-          <svg viewBox="0 0 600 200" role="img" aria-label="Two questions derived from one transition: answered independently before training, correlated after training">
-            <defs><marker id="m3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#2453c4" /></marker>
-              <marker id="m3g" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#8a94a6" /></marker></defs>
-            {[{ cx: 150, after: false }, { cx: 450, after: true }].map((p) => (
-              <g>
-                <text x={p.cx} y="20" class="s-lab">{p.after ? 'After training' : 'Before training'}</text>
-                <rect x={p.cx - 48} y="34" width="36" height="28" rx="6" class="sc-frame" />
-                <rect x={p.cx - 42} y="47" width="10" height="10" rx="2" class="sc-obj" />
-                <line x1={p.cx - 8} y1="48" x2={p.cx + 6} y2="48" class="s-arr gray" marker-end="url(#m3g)" />
-                <rect x={p.cx + 12} y="34" width="36" height="28" rx="6" class="sc-frame" />
-                <rect x={p.cx + 32} y="47" width="10" height="10" rx="2" class="sc-obj" />
-                <text x={p.cx} y="80" class="s-note">one transition</text>
-                <line x1={p.cx - 20} y1="88" x2={p.cx - 75} y2="112" class="q-tie" />
-                <line x1={p.cx + 20} y1="88" x2={p.cx + 75} y2="112" class="q-tie" />
-                <rect x={p.cx - 120} y="112" width="90" height="30" rx="8" class="s-box" /><text x={p.cx - 75} y="132" class="s-t">Question 1</text>
-                <rect x={p.cx + 30} y="112" width="90" height="30" rx="8" class="s-box" /><text x={p.cx + 75} y="132" class="s-t">Question 2</text>
-                {p.after
-                  ? <line x1={p.cx - 24} y1="127" x2={p.cx + 24} y2="127" class="s-arr" marker-start="url(#m3)" marker-end="url(#m3)" />
-                  : <line x1={p.cx - 26} y1="127" x2={p.cx + 26} y2="127" class="s-dash" />}
-                <text x={p.cx} y="172" class={p.after ? 's-note blue' : 's-note'}>{p.after ? 'correlated' : 'independent'}</text>
-              </g>
-            ))}
-            <line x1="300" x2="300" y1="8" y2="180" class="s-div" />
+        <div class="item row3">
+          <h4 class="it r-left"><span class="it-n">A.2</span>Consistency of different questions from the same transition</h4>
+          <svg class="r-mid" viewBox="0 0 280 200" role="img" aria-label="Consistency of answers to different questions from the same transition: 19 percent before training, 94 percent after training">
+            {[0, 50, 100].map((t) => (<g><line x1="40" x2="270" y1={cyc(t)} y2={cyc(t)} class="grid" /><text x="32" y={cyc(t) + 4} class="tick" text-anchor="end">{t}%</text></g>))}
+            <rect x="72" y={cyc(19.0)} width="64" height={cyc(0) - cyc(19.0)} rx="5" class="cy-before" />
+            <text x="104" y={cyc(19.0) - 8} class="cy-val">19%</text>
+            <rect x="174" y={cyc(94.3)} width="64" height={cyc(0) - cyc(94.3)} rx="5" class="cy-after" />
+            <text x="206" y={cyc(94.3) - 8} class="cy-val blue">94%</text>
+            <line x1="40" x2="270" y1={cyc(0)} y2={cyc(0)} class="axis" />
+            <text x="104" y="192" class="cy-lab">Before training</text>
+            <text x="206" y="192" class="cy-lab">After training</text>
           </svg>
+          <p class="r-right">The model learns the transition itself<span class="ok"> ✓</span><span class="inst">, instead of separate skills for each question</span></p>
         </div>
         <div class="item">
-          <h4 class="it"><span class="it-n">A.3</span>The gains are not a shortcut</h4>
+          <h4 class="it"><span class="it-n">A.3</span>The gains come from real transition reasoning<span class="ok"> ✓</span><span class="inst">, instead of a shortcut</span></h4>
           <p class="it-more">See details in <a href="https://arxiv.org/abs/2610.12417" target="_blank" rel="noopener">our paper</a>.</p>
         </div>
       </div>
@@ -146,7 +137,7 @@ const DSB = [
       <div class="ev-head"><span class="ev-n">B</span><h3 class="ev-t">The downstream gains result from that capability? <span class="yes">— Yes</span></h3></div>
       <div class="items">
         <div class="item">
-          <h4 class="it"><span class="it-n">B.1</span>The model learns a similar profile from different sources of supervision</h4>
+          <h4 class="it"><span class="it-n">B.1</span>The model learns a similar profile from different sources of supervision<span class="ok"> ✓</span><span class="inst">, instead of a different profile for each source</span></h4>
           <div class="cmat">
             <img src="figures/profiles_raw.png" alt="Correlation matrix of the 11 subsets' transfer profiles; every cell is positive." width="506" height="506" loading="lazy" />
             <div class="cmat-side">
@@ -158,7 +149,7 @@ const DSB = [
           <p class="it-cap">All pairs of sources have positively correlated transfer: they improve largely the same downstream benchmarks.</p>
         </div>
         <div class="item">
-          <h4 class="it"><span class="it-n">B.2</span>Downstream gains grow with the capability learned</h4>
+          <h4 class="it"><span class="it-n">B.2</span>Downstream gains grow with the capability learned<span class="ok"> ✓</span><span class="inst">, instead of being unrelated to it</span></h4>
           <svg viewBox={`0 0 ${SW} ${SH}`} role="img" aria-label={`Mean downstream gain against WOVEN gain for the 11 subsets; r = ${r.toFixed(2)}`}>
             {[0, 1, 2, 3].map((t) => (
               <g>
@@ -177,8 +168,8 @@ const DSB = [
           <p class="it-cap">Sources that improve WOVEN accuracy more also transfer more (r = 0.86 across the 11 sources).</p>
         </div>
         <div class="item">
-          <h4 class="it"><span class="it-n">B.3</span>Transfer requires learning how the world really changes</h4>
-          <svg class="worlds" viewBox="0 0 720 324" role="img" aria-label="Training on the WOVEN world transfers to downstream benchmarks; a perturbed WOVEN world with stable, predictable, but wrong rules is learned on its own test set but does not transfer; other multiple-choice data does not transfer">
+          <h4 class="it"><span class="it-n">B.3</span>Transfer requires learning how the world really changes<span class="ok"> ✓</span><span class="inst">, instead of the question format or any learnable rule</span></h4>
+          <svg class="worlds" viewBox="0 0 720 334" role="img" aria-label="Training on the WOVEN world transfers to downstream benchmarks; a perturbed WOVEN world with stable, predictable, but wrong rules is learned on its own test set but does not transfer; other multiple-choice data does not transfer">
             <defs><marker id="m5" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#8a94a6" /></marker></defs>
             <rect x="22" y="8" width="216" height="78" rx="12" class="w-real" />
             <text x="130" y="40" class="w-t">WOVEN world</text>
@@ -207,14 +198,15 @@ const DSB = [
                 {!d.ok && <text x={d.x + 16} y="218" class="w-no">no transfer</text>}
               </g>
             ))}
-            <rect x="20" y="248" width="680" height="64" rx="14" class="w-down" />
-            <text x="40" y="285" class="w-dt">Downstream benchmarks</text>
-            {DSB.map((b) => (<g><rect x={b.x} y="267" width={b.w} height="26" rx="13" class="w-chip" /><text x={b.x + b.w / 2} y="284.5" class="w-ct">{b.n}</text></g>))}
+            <rect x="20" y="248" width="680" height="78" rx="14" class="w-down" />
+            <text x="40" y="272" class="w-dt">Downstream benchmarks</text>
+            {DSB.map((b) => (<g><rect x={b.x} y="284" width={b.w} height="26" rx="13" class={b.dom ? 'w-chip dom' : 'w-chip'} /><text x={b.x + b.w / 2} y="301.5" class={b.dom ? 'w-ct dom' : 'w-ct'}>{b.n}</text></g>))}
+            <text x="672" y="302" class="w-more">…</text>
           </svg>
           <p class="it-cap">With the same question format and amount of training, the wrong rules of the perturbed world are learned on its own test set, yet only the correct transitions improve downstream benchmarks.</p>
         </div>
         <div class="item">
-          <h4 class="it"><span class="it-n">B.4</span>The capability helps exactly the tasks that need it</h4>
+          <h4 class="it"><span class="it-n">B.4</span>The capability helps exactly the tasks that need it<span class="ok"> ✓</span><span class="inst">, instead of making the model generally stronger</span></h4>
           <svg viewBox="0 0 520 170" role="img" aria-label="All 22 benchmarks with visual transitions improve; none of the 4 static-perception or general video QA benchmarks gains more than 2 points">
             <rect x="20" y="10" width="220" height="150" rx="12" class="sp-yes" />
             <text x="130" y="36" class="sp-h yes">Tasks with</text>
@@ -236,7 +228,7 @@ const DSB = [
       <div class="ev-head"><span class="ev-n">+</span><h3 class="ev-t">Further test of causality by intervention</h3></div>
       <div class="items">
         <div class="item">
-          <h4 class="it">Transition supervision can replace part of task-specific training data</h4>
+          <h4 class="it">Transition supervision can replace part of task-specific training data<span class="ok"> ✓</span><span class="inst">, instead of acting like deleted data</span></h4>
           <figure class="ev-fig wide">
             <a href="figures/substitution.png" target="_blank" rel="noopener" class="zoom-link" title="Open full-size image"><img src="figures/substitution.png" alt="Three panels plotting accuracy against the share of task-specific training data replaced by WOVEN items under a fixed 2,000-item budget. Accuracy stays near the original level up to 30 to 50 percent replacement and stays above simply deleting those items." width="2000" height="573" loading="lazy" /></a>
           </figure>
@@ -311,6 +303,21 @@ const DSB = [
   .mk-no { fill: #fdecec; stroke: #d14343; stroke-width: 1.4; }
   .mk-ok-t { font-size: 12px; font-weight: 800; fill: #1f7a4d; text-anchor: middle; }
   .mk-no-t { font-size: 11px; font-weight: 800; fill: #c62828; text-anchor: middle; }
+  .item.row3 { flex-direction: row; align-items: center; justify-content: space-between; gap: 1.6rem; }
+  .item.row3 .r-left { flex: 1 1 0; align-self: center; }
+  .item.row3 .r-mid { flex: 0 0 280px; width: 280px; height: auto; display: block; overflow: visible; }
+  .item.row3 .r-right { flex: 1 1 0; margin: 0; font-size: 1.02rem; font-weight: 700; line-height: 1.45; color: #1f7a4d; background: #eff8f2; border: 1px solid #cfe9d9; border-radius: 10px; padding: 0.8rem 1rem; }
+  .cy-before { fill: #b8c0cc; }
+  .cy-after { fill: #2453c4; }
+  .cy-val { font-size: 15px; font-weight: 800; fill: #4a5263; text-anchor: middle; }
+  .cy-val.blue { fill: #2453c4; }
+  .cy-lab { font-size: 12.5px; font-weight: 600; fill: #1c2a3a; text-anchor: middle; }
+  @media (max-width: 760px) { .item.row3 { flex-direction: column; align-items: stretch; } .item.row3 .r-mid { align-self: center; } }
+  .it .ok, .r-right .ok { color: #1f7a4d; font-weight: 800; }
+  .it .inst, .r-right .inst { color: #8a94a6; font-weight: 500; }
+  .w-chip.dom { fill: #edf2fd; stroke: #c9d6f6; }
+  .w-ct.dom { fill: #2453c4; }
+  .w-more { font-size: 18px; font-weight: 700; fill: #8a94a6; text-anchor: middle; }
   .it-n { color: #2453c4; margin-right: 0.55rem; font-variant-numeric: tabular-nums; }
   .item { display: flex; flex-direction: column; align-items: center; gap: 0.8rem; padding: 1.2rem 0; border-top: 1px solid #eef1f6; }
   .item:first-child { border-top: 0; padding-top: 0.6rem; }
