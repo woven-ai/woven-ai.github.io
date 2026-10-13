@@ -49,13 +49,12 @@ const DSB = [
       <figure class="schema-panel">
         <svg viewBox="0 0 440 236" role="img" aria-label="Task-specific effects: each supervision source improves only its own domain">
           <defs><marker id="ah-gray" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#a3acbb" /></marker></defs>
-          <text x="86" y="26" class="col-h" text-anchor="middle">Supervision sources</text>
+          <text x="20" y="26" class="col-h" text-anchor="start">Transition supervision sources</text>
           <text x="354" y="26" class="col-h" text-anchor="middle">Downstream domains</text>
           {YS.map((y, k) => (
             <g>
               <rect x="20" y={y} width={BW} height={BH} rx="9" class="box src" />
-              <text x={20 + BW / 2} y={y + 16} class="box-w">WOVEN</text>
-              <text x={20 + BW / 2} y={y + 34} class="box-t">{SRC[k]}</text>
+              <text x={20 + BW / 2} y={y + BH / 2 + 5} class="box-t">{SRC[k]}</text>
               <rect x={440 - 20 - BW} y={y} width={BW} height={BH} rx="9" class="box dst" />
               <text x={440 - 20 - BW / 2} y={y + BH / 2 + 5} class="box-t">{DST[k]}</text>
               <line x1={20 + BW + 8} y1={y + BH / 2} x2={440 - 20 - BW - 10} y2={y + BH / 2} class="arrow gray" marker-end="url(#ah-gray)" />
@@ -67,13 +66,12 @@ const DSB = [
       <figure class="schema-panel">
         <svg viewBox="0 0 440 236" role="img" aria-label="A shared primitive: every supervision source builds visual world modeling, which helps every domain">
           <defs><marker id="ah-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#2453c4" /></marker></defs>
-          <text x="6" y="26" class="col-h" text-anchor="start">Supervision sources</text>
+          <text x="6" y="26" class="col-h" text-anchor="start">Transition supervision sources</text>
           <text x="434" y="26" class="col-h" text-anchor="end">Downstream domains</text>
           {YS.map((y, k) => (
             <g>
               <rect x="6" y={y} width={120} height={BH} rx="9" class="box src" />
-              <text x={66} y={y + 16} class="box-w">WOVEN</text>
-              <text x={66} y={y + 34} class="box-t">{SRC[k]}</text>
+              <text x={66} y={y + BH / 2 + 5} class="box-t">{SRC[k]}</text>
               <rect x={314} y={y} width={120} height={BH} rx="9" class="box dst" />
               <text x={374} y={y + BH / 2 + 5} class="box-t">{DST[k]}</text>
               <line x1={130} y1={y + BH / 2} x2={PX - 6} y2={PY + PH / 2 + (k - 1) * 22} class="arrow blue" marker-end="url(#ah-blue)" />
@@ -247,7 +245,6 @@ const DSB = [
   .box.src { fill: #e6edfc; stroke: #c9d6f6; }
   .box.dst { fill: #fff; stroke: #d5dbe6; }
   .box-t { font-size: 14px; font-weight: 600; fill: #1c2a5a; text-anchor: middle; }
-  .box-w { font-size: 10.5px; font-weight: 800; letter-spacing: 0.08em; fill: #2453c4; text-anchor: middle; }
   .arrow { stroke-width: 2; fill: none; }
   .arrow.gray { stroke: #a3acbb; }
   .arrow.blue { stroke: #2453c4; }
